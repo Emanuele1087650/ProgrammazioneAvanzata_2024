@@ -22,7 +22,8 @@ services:
       - 8000:5000
     restart: always
     volumes:
-      - ./CV:/usr/app
+      - ./CV:/usr/src/app
+      - shared_volume:/usr/src/Datasets
   app:
     build: ./
     ports:
@@ -45,3 +46,7 @@ services:
       TTL: ${TTL}
     volumes:
       - ./src:/usr/src/app
+      - shared_volume:/usr/src/Datasets
+
+volumes:
+  shared_volume:
