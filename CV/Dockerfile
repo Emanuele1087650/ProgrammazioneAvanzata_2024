@@ -1,8 +1,9 @@
 FROM python:3.12.3-bullseye
 
-WORKDIR /usr/app
+WORKDIR /usr/src/app
 
 COPY requirements.txt .
+COPY PA.py .
 
 RUN apt-get update && apt-get install ffmpeg libsm6 libxext6  -y
 RUN pip install -r requirements.txt
