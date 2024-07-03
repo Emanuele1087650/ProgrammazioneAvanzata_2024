@@ -7,8 +7,6 @@ COPY requirements.txt .
 RUN apt-get update && apt-get install ffmpeg libsm6 libxext6  -y
 RUN pip install -r requirements.txt
 
-COPY . .
-
 CMD ["flask", "--app", "PA", "run", "--debug", "--host=0.0.0.0"]
 
 # indica quale interfacce di rete vanno in ascolto, con 0.0.0.0 dico tutte (WiFi, LAN, ecc 1, 2, 4, 8)
