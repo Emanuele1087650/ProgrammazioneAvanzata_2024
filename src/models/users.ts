@@ -29,7 +29,7 @@ export const User = sequelize.define(
       },
       tokens: {
         type: DataTypes.REAL,
-        defaultValue: 3,
+        defaultValue: 10,
       },
     },
     {

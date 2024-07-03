@@ -35,7 +35,7 @@ export class SequelizeDB {
         dialectOptions: {
           useUTC: false, // for reading from database
         },
-        timezone: "+01:00",
+        timezone: process.env.TZ,
       }
     );
   }

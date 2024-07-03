@@ -24,7 +24,7 @@ CREATE TABLE request (
     req_cost REAL NOT NULL,
     timestamp TIMESTAMPTZ NOT NULL,
     req_users INTEGER REFERENCES users(id_user) NOT NULL,
-    req_graph INTEGER REFERENCES dataset(id_dataset) NOT NULL
+    req_dataset INTEGER REFERENCES dataset(id_dataset) NOT NULL
 );
 
 INSERT INTO users (username, email, role) VALUES
