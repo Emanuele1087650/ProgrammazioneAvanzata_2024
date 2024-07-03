@@ -3,7 +3,7 @@ import {SequelizeDB} from '../singleton/sequelize'
 
 const sequelize = SequelizeDB.getConnection();
 
-export const User = sequelize.define(
+export const Users = sequelize.define(
     "users",
     {
       id_user: {
