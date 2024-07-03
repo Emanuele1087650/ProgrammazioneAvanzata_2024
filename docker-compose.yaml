@@ -23,3 +23,25 @@ services:
     restart: always
     volumes:
       - ./CV:/usr/app
+  app:
+    build: ./
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+      - cv
+      - cache
+    env_file:
+      - .env
+    environment:
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      DB_HOST: db
+      DB_PORT: ${DB_PORT}
+      JWT_KEY: ${JWT_KEY}
+      REDIS_HOST: cache
+      REDIS_PORT: ${REDIS_PORT}
+      TTL: ${TTL}
+    volumes:
+      - ./src:/usr/src/app
