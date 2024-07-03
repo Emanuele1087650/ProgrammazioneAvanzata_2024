@@ -1,10 +1,10 @@
 import { Sequelize, DataTypes, where, Transaction } from 'sequelize';
 import {SequelizeDB} from '../singleton/sequelize'
-import { Users } from "./users";
+import { User } from "./users";
 
 const sequelize = SequelizeDB.getConnection();
 
-export const Datasets = sequelize.define(
+export const Dataset = sequelize.define(
   "datasets",
   {
     id_dataset: {
@@ -20,7 +20,7 @@ export const Datasets = sequelize.define(
     id_creator: {
       type: DataTypes.INTEGER,
       references: {
-        model: Users,
+        model: User,
         key: "id_user",
       },
     },
