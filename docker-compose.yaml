@@ -24,8 +24,8 @@ services:
       - 8000:5000
     restart: always
     volumes:
-      - ./CV:/usr/src/app
-      - shared_volume:/usr/src/Datasets
+      - ./CV:/usr/app/src
+      - shared_volume:/usr/app/Datasets
   app:
     build: ./
     ports:
@@ -47,8 +47,8 @@ services:
       REDIS_PORT: ${REDIS_PORT}
       TTL: ${TTL}
     volumes:
-      - ./src:/usr/src/app
-      - shared_volume:/usr/src/Datasets
+      - ./src:/usr/app/src
+      - shared_volume:/usr/app/Datasets
 
 volumes:
   shared_volume:

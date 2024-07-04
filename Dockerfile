@@ -1,9 +1,10 @@
 FROM node:18
 
-WORKDIR /usr/src/app
+WORKDIR /usr/app
 
-COPY package*.json ./
+COPY package*.json .
 
 RUN npm install
 
-CMD [ "npm", "start" ]
+#CMD [ "npm", "start" ]
+CMD [ "tail", "-f", "/dev/null" ]
