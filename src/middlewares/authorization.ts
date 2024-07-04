@@ -1,63 +1,62 @@
 require("dotenv").config();
 import jwt from "jsonwebtoken";
 import { getUserByUsername } from "../models/users";
-//import { sendResponse } from "../utils/messages_sender";
-//import HttpStatusCode from "../utils/http_status_code";
-//import Message from "../utils/messages_string";
 
-export function checkAuthHeader(req: any, res: any, next: any): void {
+export function verifyHeader(req: any, res: any, next: any): void {
   if (req.headers.authorization) next();
-  else next();
+  else {
+    res.status(401).json({message: "Authorization header is missing"});
+  }
 }
 
-export function checkPayloadHeader(req: any, res: any, next: any): void {
-  if (req.headers["content-type"] == "application/json") next();
-  else next();
-}
-
-export function checkToken(req: any, res: any, next: any): void {
+export function verifyToken(req: any, res: any, next: any): void {
   const bearerHeader: string = req.headers.authorization;
-  if (typeof bearerHeader !== "undefined") {
-    const bearerToken: string = bearerHeader.split(" ")[1];
-    req.token = bearerToken;
+  const bearer = bearerHeader.split(" ");
+  if (bearer.length === 2 && bearer[0] === "Bearer") {
+    req.token = bearer[1];
     next();
-  } else next();
+  } else {
+    res.status(401).json({message: "Authorization header format is 'Bearer <token>'"});
+  }
 }
 
-export function verifyAndAuthenticate(req: any, res: any, next: any): void {
+export function verifyJWT(req: any, res: any, next: any): void {
   try {
     const jwtKey = process.env.JWT_KEY;
     if (!jwtKey) {
       throw new Error("JWT_KEY is not defined");
     }
-    const decoded: string | jwt.JwtPayload = jwt.verify(req.token, jwtKey);
-    if (decoded != null && typeof decoded !== "string") {
-      req.username = decoded.username; // Aggiungi l'ID dell'utente alla richiesta
+    const decoded = jwt.verify(req.token, jwtKey) as jwt.JwtPayload;
+    if (decoded && typeof decoded !== "string" && decoded.username) {
+      req.username = decoded.username; // Aggiungi il nome utente alla richiesta
       next();
+    } else {
+      res.status(401).json({message: "Invalid token"});
     }
   } catch (error) {
-    next(error);
+    res.status(401).json({message: "Failed to authenticate token", error: error.message});
   }
 }
 
-export function checkJSONPayload(req: any, res: any, next: any): void {
+export function verifyPayload(req: any, res: any, next: any): void {
   try {
     req.body = JSON.parse(JSON.stringify(req.body));
     next();
   } catch (error) {
-    next(error);
+    res.status(400).json({message: "Invalid payload", error: error.message});
   }
 }
 
-export async function checkUser(req: any, res: any, next: any) {
-    try {
-      var user = await getUserByUsername(req.username);
-      if (!user) {
-        throw new Error();
-      }
-      req.user = user;
-      next();
-    } catch (error) {
-      next(error);
+export async function verifyUser(req: any, res: any, next: any) {
+  try {
+    const user = await getUserByUsername(req.username);
+    if (!user) {
+      res.status(404).json({message: "User not found"});
+      return;
     }
+    req.user = user;
+    next();
+  } catch (error) {
+    res.status(500).json({message: "Internal server error", error: error.message});
   }
+}
