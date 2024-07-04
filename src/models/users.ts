@@ -53,8 +53,6 @@ export async function getUserByUsername(username: string) {
   const user = await User.findOne({
     where: {username: username},
   });
-  console.log("oooooooooooooooooooooo")
-  console.log(user)
   if (!user) {
     throw new Error(`User with username ${username} not found`);
   }
