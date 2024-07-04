@@ -1,6 +1,6 @@
 import express from "express";
-import * as Controller from "../controller/controller";
-import * as Middleware from "../middleware/middleware";
+//import * as Controller from "../controllers/controller";
+//import * as Middleware from "../middlewares/middleware";
 
 const router = express.Router();
 
