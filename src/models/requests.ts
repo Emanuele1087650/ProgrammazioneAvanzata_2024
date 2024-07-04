@@ -149,11 +149,11 @@ export async function createDataset(user: any, dataset: any, request: any, trans
   await updateRequest(user.id_user, dataset.id_dataset, 'COMPLETED', transaction) 
 }
 
-export async function inference(user: any, dataset: any, request: any, model?: string, cam_det?: boolean, cam_cls?: boolean, transaction: Transaction) {
+export async function inference(user: any, dataset: any, request: any, transaction: Transaction, model?: string, cam_det?: boolean, cam_cls?: boolean) {
   await createRequest(request, transaction);
   if (user.tokens > request.req_cost) {
-    const response = await fetch(`http://127.0.0.1:8000/inference/${user.username}/${dataset.name}/${model}/${cam_det}/${cam_cls}` {
-      method: 'POST',
+    const response = await fetch(`http://127.0.0.1:8000/inference/${user.username}/${dataset.name}/${model}/${cam_det}/${cam_cls}`, {
+      method: 'POST'
     });
     if (response.body !== null) {
       await updateRequest(user.id_user, dataset.id_dataset, 'COMPLETED', transaction) 
