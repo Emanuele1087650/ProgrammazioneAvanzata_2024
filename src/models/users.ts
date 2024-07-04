@@ -51,9 +51,10 @@ export async function getUserById(id_user: number) {
 
 export async function getUserByUsername(username: string) {
   const user = await User.findOne({
-    raw: true,
-    where: {username},
+    where: {username: username},
   });
+  console.log("oooooooooooooooooooooo")
+  console.log(user)
   if (!user) {
     throw new Error(`User with username ${username} not found`);
   }
@@ -65,6 +66,7 @@ export async function getAllUser() {
   if(!users) {
     throw new Error('No users found');
   }
+  return users
 }
 
 export async function getBalance(id_user: number) {

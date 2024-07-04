@@ -1,6 +1,6 @@
 FROM python:3.12.3-bullseye
 
-WORKDIR /usr/src/app
+WORKDIR /usr/app/src
 
 COPY requirements.txt .
 COPY PA.py .

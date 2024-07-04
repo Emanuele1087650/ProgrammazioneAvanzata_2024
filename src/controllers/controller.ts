@@ -1,6 +1,5 @@
 import { getAllUser } from "../models/users";
 
 export async function getAllDatasets(req: any, res: any) {
-      await getAllUser();
-      return;
-  }
+      return res.status(200).json(await getAllUser());
+}

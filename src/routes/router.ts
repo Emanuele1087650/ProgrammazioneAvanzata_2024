@@ -1,6 +1,6 @@
 import express from "express";
 import * as Controller from "../controllers/controller";
-//import * as Middleware from "../middlewares/middleware";
+import * as Middleware from "../middlewares/middleware";
 
 const router = express.Router();
 
@@ -13,7 +13,9 @@ router.post(
 );
 
 router.post(
-    "/datasets", async function (req: any, res: any) {
+    "/datasets",
+    Middleware.AUTH,
+    async function (req: any, res: any) {
         Controller.getAllDatasets(req, res);
     }
 );

@@ -1,6 +1,6 @@
 require("dotenv").config();
 import jwt from "jsonwebtoken";
-import { User, getUserByUsername } from "../models/users";
+import { getUserByUsername } from "../models/users";
 //import { sendResponse } from "../utils/messages_sender";
 //import HttpStatusCode from "../utils/http_status_code";
 //import Message from "../utils/messages_string";
@@ -58,7 +58,6 @@ export async function checkUser(req: any, res: any, next: any) {
       req.user = user;
       next();
     } catch (error) {
-      //sendResponse(res, HttpStatusCode.UNAUTHORIZED, Message.USER_NOT_FOUND);
-      return;
+      next(error);
     }
   }
