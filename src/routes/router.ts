@@ -1,5 +1,5 @@
 import express from "express";
-//import * as Controller from "../controllers/controller";
+import * as Controller from "../controllers/controller";
 //import * as Middleware from "../middlewares/middleware";
 
 const router = express.Router();
@@ -13,7 +13,9 @@ router.post(
 );
 
 router.post(
-    "/datasets"
+    "/datasets", async function (req: any, res: any) {
+        Controller.getAllDatasets(req, res);
+    }
 );
 
 router.post(
