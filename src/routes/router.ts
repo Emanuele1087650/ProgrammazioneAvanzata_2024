@@ -5,7 +5,10 @@ import * as Middleware from "../middlewares/middleware";
 const router = express.Router();
 
 router.post(
-    "/createDataset"
+    "/createDataset",
+    async function (req: any, res: any) {
+        Controller.createDataset(req, res);
+    }
 );
 
 router.post(

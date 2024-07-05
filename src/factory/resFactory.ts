@@ -7,15 +7,16 @@ interface GoodResponse {
 }
 
 export enum ResponseType {
-    NO_AUTH_HEADER,
+    UPLOAD_DATASET,
+   
 }
 
 export class ResponseFactory {
     private responseMap: Record<ResponseType, GoodResponse> = {
-        [ResponseType.NO_AUTH_HEADER]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.NO_AUTH_HEADER },
+        [ResponseType.UPLOAD_DATASET]: { code: HttpStatusCode.OK, message: Messages.UPLOAD_DATASET },
     };
 
     createResponse(type: ResponseType): GoodResponse {
-        return this.responseMap[type] || { code: 500, message: "Internal Server Error" };
+        return this.responseMap[type];
     }
 }

@@ -10,6 +10,9 @@ enum MESSAGES {
     ROUTE_NOT_FOUND = "Not Found - Route not found",
     UNAUTHORIZED = "Error - Unauthorized",
     BAD_REQUEST = "Error - Bad request",
+
+    UPLOAD_DATASET = "OK - Dataset loaded",
+    DATASET_ALREADY_EXIST = "Bad Request - Dataset already exist",
   
     // For users
     USER_NOT_FOUND = "User not found",

@@ -25,6 +25,7 @@ enum ErrorType {
     ADMIN_NOT_FOUND,
     INVALID_IMPORT,
     RECHARGE_FAIL,
+    DATASET_ALREADY_EXIST,
 }
 
 class CustomError extends Error {
@@ -60,10 +61,11 @@ class ErrorFactory {
         [ErrorType.ADMIN_NOT_FOUND]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.ADMIN_NOT_FOUND },
         [ErrorType.INVALID_IMPORT]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.INVALID_IMPORT },
         [ErrorType.RECHARGE_FAIL]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.RECHARGE_FAIL },
+        [ErrorType.DATASET_ALREADY_EXIST]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.DATASET_ALREADY_EXIST }
     };
 
     createError(type: ErrorType): CustomError {
-        const errorResponse = ErrorFactory.errorMap[type]
+        const errorResponse = ErrorFactory.errorMap[type] || {code : 200, message: "ciao"}
         return new CustomError(errorResponse.code, errorResponse.message)
     }
 
