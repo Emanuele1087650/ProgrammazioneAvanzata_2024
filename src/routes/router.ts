@@ -9,7 +9,10 @@ router.post(
 );
 
 router.post(
-    "/deleteDataset"
+    "/deleteDataset",
+    async function (req: any, res: any) {
+        Controller.deleteDataset(req, res);
+    }
 );
 
 router.post(
@@ -20,7 +23,10 @@ router.post(
 );
 
 router.post(
-    "/updateDataset"
+    "/updateDataset",
+    async function (req: any, res: any) {
+        Controller.updateDataset(req, res);
+    }
 );
 
 router.post(

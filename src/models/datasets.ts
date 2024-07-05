@@ -1,18 +1,21 @@
 import { DataTypes, Transaction } from 'sequelize';
 import {SequelizeDB} from '../singleton/sequelize'
 import { User } from "./users";
+import { ErrorFactory, ErrorType } from '../factory/errFactory';
+import { isEmpty } from 'bullmq';
 
 const sequelize = SequelizeDB.getConnection();
+const errorHandler = new ErrorFactory();
 
 export const Dataset = sequelize.define(
-  "datasets",
+  "dataset",
   {
     id_dataset: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true,
     },
-    name: {
+    name_dataset: {
       type: DataTypes.TEXT,
       allowNull: false,
     },
@@ -25,7 +28,7 @@ export const Dataset = sequelize.define(
     },
   },
   {
-    tableName: "datasets",
+    tableName: "dataset",
     timestamps: false,
     freezeTableName: true,
   }
@@ -35,8 +38,21 @@ export async function getDatasetById(id_dataset: number) {
   const dataset = await Dataset.findByPk(id_dataset, {
     raw: true,
   });
-  if (!dataset) {
-    throw new Error(`Dataset with id ${id_dataset} not found`);
+  if(dataset===null){
+    throw errorHandler.createError(ErrorType.NO_DATASET_ID);
+  }
+  return dataset;
+}
+
+export async function getDatasetByName(name: string) {
+  const dataset = await Dataset.findAll({
+    where: {
+      name_dataset: name,
+    },
+    raw: true
+  });
+  if(dataset===null){
+    //throw errorHandler.createError(ErrorType.NO_DATASET_ID);
   }
   return dataset;
 }
@@ -44,8 +60,12 @@ export async function getDatasetById(id_dataset: number) {
 export async function getAllDataset() {
   const datasets = await Dataset.findAll()
   if(!datasets) {
-    throw new Error('No datasets found');
+    throw errorHandler.createError(ErrorType.INTERNAL_ERROR);
   }
+  if(datasets.length === 0){
+    throw errorHandler.createError(ErrorType.NO_DATASETS);
+  }
+  return datasets;
 }
 
 export async function getDatasetsByUser(id_user: number) {
@@ -59,4 +79,39 @@ export async function getDatasetsByUser(id_user: number) {
     throw new Error(`Dataset created by user ${id_user} not found`);
   }
   return datasets;
+}
+
+export async function deleteDatasetById(id: number) {
+  const dataset = await getDatasetById(id);
+  if(dataset===null){
+    throw errorHandler.createError(ErrorType.NO_DATASET_ID);
+  }
+  const tr = await sequelize.transaction();
+  await Dataset.destroy({
+    where: {
+      id_dataset: id,
+    },
+    transaction: tr,
+  }).catch(()=>{throw errorHandler.createError(ErrorType.DATASET_DELETION_FAILED);});
+  await tr.commit();
+}
+
+export async function updateDatasetByName(req: any) {
+  var name = req.body["name"];
+  var new_name = req.body["new_name"];
+  var dataset = {
+    name_dataset: new_name
+  }
+  if(dataset===null){
+    throw errorHandler.createError(ErrorType.NO_DATASETS);
+  }
+
+  const tr = await sequelize.transaction();
+  await Dataset.update(dataset, {
+    where: {
+      name_dataset: name,
+    },
+    transaction: tr,
+  }).catch(()=>{throw errorHandler.createError(ErrorType.DATASET_DELETION_FAILED);});
+  await tr.commit();
 }

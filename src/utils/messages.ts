@@ -10,9 +10,15 @@ enum MESSAGES {
     ROUTE_NOT_FOUND = "Not Found - Route not found",
     UNAUTHORIZED = "Error - Unauthorized",
     BAD_REQUEST = "Error - Bad request",
+    INTERNAL_ERROR = "Internal server error",
   
     // For users
     USER_NOT_FOUND = "User not found",
+    NO_DATASETS = "There are no datasets",
+    NO_DATASET_ID = "There is no dataset with this id",
+    DATASET_DELETED = "Dataset deleted succesfully",
+    DATASET_DELETION_FAILED = "Error during dataset deletion",
+    DATASET_UPDATED = "Dataset updated succesfully",
   
     // For requests
     REQUEST_ACCEPTED = "Request accepted",

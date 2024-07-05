@@ -14,7 +14,7 @@ CREATE TABLE users (
 );
 CREATE TABLE dataset (
     id_dataset SERIAL PRIMARY KEY NOT NULL,
-    name TEXT NOT NULL,
+    name_dataset TEXT NOT NULL,
     id_creator INTEGER REFERENCES users(id_user) NOT NULL
 );
 CREATE TABLE request (
@@ -23,7 +23,7 @@ CREATE TABLE request (
     metadata JSONB NOT NULL,
     req_cost REAL NOT NULL,
     timestamp TIMESTAMPTZ NOT NULL,
-    req_users INTEGER REFERENCES users(id_user) NOT NULL,
+    req_user INTEGER REFERENCES users(id_user) NOT NULL,
     req_dataset INTEGER REFERENCES dataset(id_dataset) NOT NULL
 );
 

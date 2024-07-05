@@ -60,3 +60,21 @@ export async function verifyUser(req: any, res: any, next: any) {
     res.status(500).json({message: "Internal server error"});
   }
 }
+/*
+export async function checkAdmin(req: any, res: any, next: any) {
+  try {
+    
+    var admin = await getUserByUsername(req.username);
+
+    if (!admin || admin.role != "admin") {
+      throw new Error();
+    }
+
+    req.admin = admin;
+    next();
+  } catch (error) {
+    //sendResponse(res, HttpStatusCode.NOT_FOUND, Message.ADMIN_NOT_FOUND);
+    //res.status(500).send("Utente admin non trovato");
+  }
+}
+*/
