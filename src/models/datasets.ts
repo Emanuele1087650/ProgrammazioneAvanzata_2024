@@ -35,13 +35,31 @@ export const Dataset = sequelize.define(
 );
 
 export async function createDataset(data: any, transaction: Transaction) {
+  await checkDatasetUser(data.id_creator, data.name_dataset);
   await Dataset.create(data, 
     { 
       transaction: transaction 
     }).catch(async () => {
       await transaction.rollback();
-      throw errorHandler.createError(ErrorType.BAD_REQUEST); 
+      throw errorHandler.createError(ErrorType.INTERNAL_ERROR); 
     });
+}
+
+export async function checkDatasetUser(id_user: number, name: string) {
+  const datasets = await Dataset.findAll({
+    where: {
+      name_dataset: name,
+      id_creator: id_user,
+    },
+    raw: true
+  });
+  if (!(datasets.length === 0)) {
+    throw errorHandler.createError(ErrorType.DATASET_ALREADY_EXIST);
+  }
+  if (!datasets) {
+    throw new Error(`Dataset created by user ${id_user} not found`);
+  }
+  return;
 }
 
 export async function getDatasetById(id_dataset: number) {
@@ -87,7 +105,7 @@ export async function getDatasetsByUser(id_user: number, name: string) {
     raw: true
   });
   if (datasets.length === 0) {
-    throw new Error(`Dataset created by user ${id_user} not found`);
+    throw errorHandler.createError(ErrorType.NO_DATASET_ID);
   }
   if (!datasets) {
     throw new Error(`Dataset created by user ${id_user} not found`);
