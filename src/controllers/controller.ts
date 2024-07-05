@@ -5,7 +5,7 @@ import HttpStatusCode from "../utils/status_code"
 import { ResponseFactory, ResponseType } from "../factory/resFactory";
 import { createRequest, Request, updateRequest } from "../models/request";
 import { SequelizeDB } from "../singleton/sequelize";
-import { Dataset, getDatasetById, getDatasetsByUser, getAllDataset, deleteDatasetById, updateDatasetByName } from "../models/datasets";
+import { Dataset, getDatasetById, getDatasetsByUser, getAllDataset, createDataset, deleteDatasetById, updateDatasetByName } from "../models/datasets";
 import { ErrorFactory, ErrorType } from "../factory/errFactory";
 //import { myQueue } from '../singleton/queueManager';
 
@@ -17,14 +17,12 @@ const errorHandler = new ErrorFactory();
 export async function getAllDatasets(req: any, res: any) {
   try {
     sendResponse.send(res, HttpStatusCode.OK, await getAllDataset());
-    //const response = resFactory.createResponse(ResponseType.NO_AUTH_HEADER)
-    //sendResponse.send(res, response.code, response.message);
   } catch(error: any) {
     sendError.send(res, error.code, error.message);
   }
 }
 
-export async function createDataset(req: any, res: any) {
+export async function createDatasets(req: any, res: any) {
   const transaction = await SequelizeDB.getConnection().transaction();
   const name_dataset = req.body["name"]
 
@@ -36,14 +34,7 @@ export async function createDataset(req: any, res: any) {
       id_creator: user.id_user
     }
 
-    await Dataset.create(data, 
-    { 
-      transaction: transaction 
-    }).catch(async () => {
-      await transaction.rollback();
-      throw errorHandler.createError(ErrorType.BAD_REQUEST); 
-    });
-    await transaction.commit();
+    await createDataset(data, transaction);
     
     var fs = require('fs');
     var dir = `/usr/app/Datasets/${user.username}/${name_dataset}`;
@@ -51,9 +42,10 @@ export async function createDataset(req: any, res: any) {
     if (!fs.existsSync(dir)){
         fs.mkdirSync(dir, { recursive: true });
     } else {
+      await transaction.rollback();
       throw errorHandler.createError(ErrorType.DATASET_ALREADY_EXIST);
     }
-
+    await transaction.commit();
     const response = resFactory.createResponse(ResponseType.UPLOAD_DATASET)
     sendResponse.send(res, response.code, response.message);
 

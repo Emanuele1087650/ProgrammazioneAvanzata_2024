@@ -34,6 +34,16 @@ export const Dataset = sequelize.define(
   }
 );
 
+export async function createDataset(data: any, transaction: Transaction) {
+  await Dataset.create(data, 
+    { 
+      transaction: transaction 
+    }).catch(async () => {
+      await transaction.rollback();
+      throw errorHandler.createError(ErrorType.BAD_REQUEST); 
+    });
+}
+
 export async function getDatasetById(id_dataset: number) {
   const dataset = await Dataset.findByPk(id_dataset, {
     raw: true,
@@ -103,12 +113,6 @@ export async function deleteDatasetById(id: number) {
 export async function updateDatasetByName(req: any) {
   var name = req.body["name"];
   var new_name = req.body["new_name"];
-  var dataset = {
-    name_dataset: new_name
-  }
-  if(dataset===null){
-    throw errorHandler.createError(ErrorType.NO_DATASETS);
-  }
 
   const tr = await sequelize.transaction();
   await Dataset.update(

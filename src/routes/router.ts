@@ -7,7 +7,7 @@ const router = express.Router();
 router.post(
     "/createDataset",
     async function (req: any, res: any) {
-        Controller.createDataset(req, res);
+        Controller.createDatasets(req, res);
     }
 );
 
