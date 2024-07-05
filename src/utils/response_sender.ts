@@ -9,8 +9,7 @@ class ResponseSender {
       return;
     }
     res.status(status).json({message: data});
-      return;
-    
+      return; 
   }
 }
 

@@ -1,3 +1,4 @@
+/*
 import { Queue, Worker } from 'bullmq';
 import { RedisOptions } from 'ioredis';
 
@@ -28,3 +29,4 @@ worker.on('error', (err) => {
 });
 
 export { myQueue };
+*/

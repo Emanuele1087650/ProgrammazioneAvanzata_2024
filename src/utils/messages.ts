@@ -12,6 +12,10 @@ enum MESSAGES {
     BAD_REQUEST = "Error - Bad request",
     INTERNAL_ERROR = "Internal server error",
   
+
+    UPLOAD_DATASET = "OK - Dataset loaded",
+    DATASET_ALREADY_EXIST = "Bad Request - Dataset already exist",
+  
     // For users
     USER_NOT_FOUND = "User not found",
     NO_DATASETS = "There are no datasets",

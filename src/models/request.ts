@@ -2,8 +2,10 @@ import { SequelizeDB } from "../singleton/sequelize";
 import { DataTypes, Transaction } from "sequelize";
 import { Dataset } from "./datasets";
 import { User } from "./users";
+import { ErrorFactory, ErrorType } from "../factory/errFactory";
 
 const sequelize = SequelizeDB.getConnection();
+const errorHandler = new ErrorFactory();
 
 export const Request = sequelize.define(
   "request",
@@ -43,6 +45,7 @@ export const Request = sequelize.define(
         model: Dataset,
         key: "id_dataset",
       },
+      allowNull: true
     },
   },
   {
@@ -65,13 +68,15 @@ export async function getRequestById(id_request: number) {
 export async function updateRequest(id_user: number, id_dataset: number, req_status: string, transaction: Transaction) {
   try {
     await Request.update({
-      req_status: req_status
+      req_status: "COMPLETED"
     }, {
       where: {
         id_user: id_user,
         id_dataset: id_dataset
       },
       transaction: transaction
+    }).catch(() => {
+      throw errorHandler.createError(ErrorType.BAD_REQUEST); 
     });
   } catch {
     throw new Error('Error during request update');
@@ -130,23 +135,9 @@ export async function createRequest(request: any, transaction: Transaction) {
     { 
       transaction: transaction 
     }
-  ).catch((error) => {
-    error;
+  ).catch(() => {
+    throw errorHandler.createError(ErrorType.BAD_REQUEST); 
   });
-}
-
-export async function createDataset(user: any, dataset: any, request: any, transaction: Transaction) {
-  await createRequest(request, transaction);
-  if (user.tokens > request.req_cost) {
-    await Dataset.create(dataset, 
-      { 
-        transaction: transaction 
-      }
-    ).catch(async () => {
-      await updateRequest(user.id_user, dataset.id_dataset, 'FAILED', transaction);
-    });
-  }
-  await updateRequest(user.id_user, dataset.id_dataset, 'COMPLETED', transaction) 
 }
 
 export async function inference(user: any, dataset: any, request: any, transaction: Transaction, model?: string, cam_det?: boolean, cam_cls?: boolean) {

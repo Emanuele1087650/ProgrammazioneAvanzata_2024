@@ -57,6 +57,8 @@ export async function getDatasetByName(name: string) {
   return dataset;
 }
 
+
+
 export async function getAllDataset() {
   const datasets = await Dataset.findAll()
   if(!datasets) {
@@ -68,13 +70,17 @@ export async function getAllDataset() {
   return datasets;
 }
 
-export async function getDatasetsByUser(id_user: number) {
+export async function getDatasetsByUser(id_user: number, name: string) {
   const datasets = await Dataset.findAll({
     where: {
+      name_dataset: name,
       id_creator: id_user,
     },
     raw: true
   });
+  if (datasets.length === 0) {
+    throw new Error(`Dataset created by user ${id_user} not found`);
+  }
   if (!datasets) {
     throw new Error(`Dataset created by user ${id_user} not found`);
   }
