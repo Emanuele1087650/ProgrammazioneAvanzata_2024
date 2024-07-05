@@ -156,26 +156,6 @@ export async function updateDataset(req: any, res: any) {
   }
 }
 
-export async function deleteDataset(req: any, res: any) {
-  try {
-    await deleteDatasetById(parseInt(req.body["id"]));
-    const response = resFactory.createResponse(ResponseType.DATASET_DELETED)
-    sendResponse.send(res, response.code, response.message);
-  } catch(error: any) {
-    sendError.send(res, error.code, error.message);
-  }
-}
-
-export async function updateDataset(req: any, res: any) {
-  try {
-    await updateDatasetByName(req);
-    const response = resFactory.createResponse(ResponseType.DATASET_UPDATED)
-    sendResponse.send(res, response.code, response.message);
-  } catch(error: any) {
-    sendError.send(res, error.code, error.message);
-  }
-}
-
 
 /*
 export const addJob = async (req: Request, res: Response) => {

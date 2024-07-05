@@ -57,8 +57,6 @@ export async function getDatasetByName(name: string) {
   return dataset;
 }
 
-
-
 export async function getAllDataset() {
   const datasets = await Dataset.findAll()
   if(!datasets) {
@@ -113,11 +111,15 @@ export async function updateDatasetByName(req: any) {
   }
 
   const tr = await sequelize.transaction();
-  await Dataset.update(dataset, {
-    where: {
-      name_dataset: name,
-    },
-    transaction: tr,
-  }).catch(()=>{throw errorHandler.createError(ErrorType.DATASET_DELETION_FAILED);});
+  await Dataset.update(
+    {
+      name_dataset: new_name
+    }, 
+    {
+      where: {
+        name_dataset: name,
+      },
+      transaction: tr,
+    }).catch(()=>{throw errorHandler.createError(ErrorType.DATASET_DELETION_FAILED);});
   await tr.commit();
 }
