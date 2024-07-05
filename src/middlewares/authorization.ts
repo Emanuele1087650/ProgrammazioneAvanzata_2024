@@ -34,7 +34,7 @@ export function verifyJWT(req: any, res: any, next: any): void {
       res.status(401).json({message: "Invalid token"});
     }
   } catch (error) {
-    res.status(401).json({message: "Failed to authenticate token", error: error.message});
+    res.status(401).json({message: "Failed to authenticate token"});
   }
 }
 
@@ -43,7 +43,7 @@ export function verifyPayload(req: any, res: any, next: any): void {
     req.body = JSON.parse(JSON.stringify(req.body));
     next();
   } catch (error) {
-    res.status(400).json({message: "Invalid payload", error: error.message});
+    res.status(400).json({message: "Invalid payload"});
   }
 }
 
@@ -54,9 +54,9 @@ export async function verifyUser(req: any, res: any, next: any) {
       res.status(404).json({message: "User not found"});
       return;
     }
-    req.user = user;
+    req.user = user; 
     next();
   } catch (error) {
-    res.status(500).json({message: "Internal server error", error: error.message});
+    res.status(500).json({message: "Internal server error"});
   }
 }

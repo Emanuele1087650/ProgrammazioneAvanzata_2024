@@ -1,7 +1,9 @@
 import { DataTypes, Transaction } from 'sequelize';
 import { SequelizeDB } from '../singleton/sequelize'
+import { ErrorFactory, ErrorType } from "../factory/errFactory";
 
 const sequelize = SequelizeDB.getConnection();
+const errorHandler = new ErrorFactory();
 
 export const User = sequelize.define(
     "users",
@@ -62,7 +64,7 @@ export async function getUserByUsername(username: string) {
 export async function getAllUser() {
   const users = await User.findAll()
   if(!users) {
-    throw new Error('No users found');
+    throw errorHandler.createError(ErrorType.BAD_REQUEST);
   }
   return users
 }

@@ -14,7 +14,6 @@ router.post(
 
 router.post(
     "/datasets",
-    Middleware.AUTH,
     async function (req: any, res: any) {
         Controller.getAllDatasets(req, res);
     }

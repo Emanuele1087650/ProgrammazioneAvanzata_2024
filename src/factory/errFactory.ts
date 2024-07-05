@@ -24,11 +24,19 @@ enum ErrorType {
     NO_PENDING_REQUEST,
     ADMIN_NOT_FOUND,
     INVALID_IMPORT,
-    TOKENS_RECHARGED,
     RECHARGE_FAIL,
+}
+
+class CustomError extends Error {
+    code: number
+    constructor (code: number, message: string) {
+        super(message)
+        this.code = code
+    }
 }
   
 class ErrorFactory {
+
     private static errorMap: Record<ErrorType, ErrorResponse> = {
         [ErrorType.NO_AUTH_HEADER]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.NO_AUTH_HEADER },
         [ErrorType.NO_PAYLOAD_HEADER]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.NO_PAYLOAD_HEADER },
@@ -51,11 +59,14 @@ class ErrorFactory {
 
         [ErrorType.ADMIN_NOT_FOUND]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.ADMIN_NOT_FOUND },
         [ErrorType.INVALID_IMPORT]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.INVALID_IMPORT },
-        [ErrorType.TOKENS_RECHARGED]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.TOKENS_RECHARGED },
         [ErrorType.RECHARGE_FAIL]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.RECHARGE_FAIL },
     };
 
-    static createError(type: ErrorType): ErrorResponse {
-        return this.errorMap[type] || { code: 500, message: "Internal Server Error" };
+    createError(type: ErrorType): CustomError {
+        const errorResponse = ErrorFactory.errorMap[type]
+        return new CustomError(errorResponse.code, errorResponse.message)
     }
+
 }
+
+export { ErrorFactory, ErrorType, CustomError, ErrorResponse }

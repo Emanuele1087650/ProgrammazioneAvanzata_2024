@@ -15,11 +15,11 @@ const app = express();
 const port = process.env.API_PORT;
 
 app.use(express.json()); 
+app.use(Middleware.AUTH)
 app.use(router);
 /*app.use("*", (req, res) => {
   sendResponse(res, HttpStatusC ode.NOT_FOUND, Message.ROUTE_NOT_FOUND);
 });*/
-app.use(Middleware.AUTH)
 
 app.listen(port, () => { 
   console.log(`App in ascolto sulla porta ${port}...`);
