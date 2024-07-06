@@ -1,6 +1,8 @@
 import express from "express";
-import * as Controller from "../controllers/controller";
+//import * as Controller from "../controllers/controller_vecchio";
 import * as Middleware from "../middlewares/middleware";
+
+import * as Controller from "../controllers/controller";
 
 const router = express.Router();
 

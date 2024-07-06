@@ -5,40 +5,41 @@ import HttpStatusCode from "../utils/status_code"
 import { ResponseFactory, ResponseType } from "../factory/resFactory";
 import { createRequest, Request, updateRequest } from "../models/request";
 import { SequelizeDB } from "../singleton/sequelize";
+import { Dataset, getDatasetById, getDatasetsByUser, getAllDataset, createDataset, deleteDatasetByName, updateDatasetByName } from "../models/datasets_vecchio";
 import { ErrorFactory, ErrorType } from "../factory/errFactory";
 //import { myQueue } from '../singleton/queueManager';
-import { Dataset } from '../models/dataset';
-import { Transaction } from "sequelize";
 
 const sendResponse = new ResponseSender()
 const sendError = new ErrorSender()
 const resFactory = new ResponseFactory()
 const errorHandler = new ErrorFactory();
-const sequelize = SequelizeDB.getConnection();
-
 
 export async function getAllDatasets(req: any, res: any) {
   try {
-    sendResponse.send(res, HttpStatusCode.OK, await Dataset.getAllDataset());
+    sendResponse.send(res, HttpStatusCode.OK, await getAllDataset());
   } catch(error: any) {
     sendError.send(res, error.code, error.message);
   }
 }
 
 export async function createDatasets(req: any, res: any) {
-  const transaction = await sequelize.transaction();
+  const transaction = await SequelizeDB.getConnection().transaction();
   const name_dataset = req.body["name"]
   const user = req.user;
 
-  try{
-    const newDataset = await Dataset.createDataset({
+  try {
+    const data = {
       name_dataset: name_dataset,
-      id_creator: user.id_user,
-    }, transaction);
+      id_creator: user.id_user
+    }
+
+    await createDataset(data, transaction);
+    
     var fs = require('fs');
     var dir = `/usr/app/Datasets/${user.username}/${name_dataset}`;
+
     if (!fs.existsSync(dir)){
-      fs.mkdirSync(dir, { recursive: true });
+        fs.mkdirSync(dir, { recursive: true });
     } else {
       await transaction.rollback();
       throw errorHandler.createError(ErrorType.DATASET_ALREADY_EXIST);
@@ -46,9 +47,10 @@ export async function createDatasets(req: any, res: any) {
     await transaction.commit();
     const response = resFactory.createResponse(ResponseType.UPLOAD_DATASET)
     sendResponse.send(res, response.code, response.message);
+
   } catch(error: any) {
     sendError.send(res, error.code, error.message);
-    }
+  }
 }
 
 /*
@@ -125,12 +127,9 @@ export async function per_dopo (req: any, res: any) {
 
 }
 */
-
 export async function deleteDataset(req: any, res: any) {
   try {
-    const dataset = await Dataset.getDatasetByName(req.body["name"], req.user);
-    console.log(dataset)
-    await dataset.deleteDataset();
+    await deleteDatasetByName(parseInt(req.body["id"]));
     const response = resFactory.createResponse(ResponseType.DATASET_DELETED)
     sendResponse.send(res, response.code, response.message);
   } catch(error: any) {
@@ -140,14 +139,14 @@ export async function deleteDataset(req: any, res: any) {
 
 export async function updateDataset(req: any, res: any) {
   try {
-    const dataset = await Dataset.getDatasetByName(req.body["name"], req.user);
-    await dataset.updateDataset(req);
+    await updateDatasetByName(req);
     const response = resFactory.createResponse(ResponseType.DATASET_UPDATED)
     sendResponse.send(res, response.code, response.message);
   } catch(error: any) {
     sendError.send(res, error.code, error.message);
   }
 }
+
 
 /*
 export const addJob = async (req: Request, res: Response) => {

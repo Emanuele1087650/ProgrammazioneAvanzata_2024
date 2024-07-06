@@ -1,6 +1,6 @@
 import { SequelizeDB } from "../singleton/sequelize";
 import { DataTypes, Transaction } from "sequelize";
-import { Dataset } from "./datasets";
+import { Dataset } from "./datasets_vecchio";
 import { User } from "./users";
 import { ErrorFactory, ErrorType } from "../factory/errFactory";
 

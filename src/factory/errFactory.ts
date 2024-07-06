@@ -19,7 +19,7 @@ enum ErrorType {
     INTERNAL_ERROR,
     USER_NOT_FOUND,
     NO_DATASETS,
-    NO_DATASET_ID,
+    NO_DATASET_NAME,
     DATASET_DELETION_FAILED,
     REQUEST_ACCEPTED,
     REQUESTS_DENIED,
@@ -57,7 +57,7 @@ class ErrorFactory {
 
         [ErrorType.USER_NOT_FOUND]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.USER_NOT_FOUND },
         [ErrorType.NO_DATASETS]: { code: HttpStatusCode.NOT_FOUND, message: Messages.NO_DATASETS },
-        [ErrorType.NO_DATASET_ID]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.NO_DATASET_ID },
+        [ErrorType.NO_DATASET_NAME]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.NO_DATASET_NAME },
         [ErrorType.DATASET_DELETION_FAILED]: { code: HttpStatusCode.INTERNAL_SERVER_ERROR, message: Messages.DATASET_DELETION_FAILED },
 
         [ErrorType.REQUEST_ACCEPTED]: { code: HttpStatusCode.OK, message: Messages.REQUEST_ACCEPTED },

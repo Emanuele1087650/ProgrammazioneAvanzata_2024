@@ -67,7 +67,7 @@ export async function getDatasetById(id_dataset: number) {
     raw: true,
   });
   if(dataset===null){
-    throw errorHandler.createError(ErrorType.NO_DATASET_ID);
+    throw errorHandler.createError(ErrorType.NO_DATASET_NAME);
   }
   return dataset;
 }
@@ -105,7 +105,7 @@ export async function getDatasetsByUser(id_user: number, name: string) {
     raw: true
   });
   if (datasets.length === 0) {
-    throw errorHandler.createError(ErrorType.NO_DATASET_ID);
+    throw errorHandler.createError(ErrorType.NO_DATASET_NAME);
   }
   if (!datasets) {
     throw new Error(`Dataset created by user ${id_user} not found`);
@@ -113,11 +113,13 @@ export async function getDatasetsByUser(id_user: number, name: string) {
   return datasets;
 }
 
-export async function deleteDatasetById(id: number) {
-  const dataset = await getDatasetById(id);
+export async function deleteDatasetByName(req: any) {
+  const dataset = await getDatasetsByUser(req.user.id, req.body["name"]);
   if(dataset===null){
-    throw errorHandler.createError(ErrorType.NO_DATASET_ID);
+    throw errorHandler.createError(ErrorType.NO_DATASET_NAME);
   }
+  //const id = dataset[0].id_dataset;
+  const id = 1;
   const tr = await sequelize.transaction();
   await Dataset.destroy({
     where: {

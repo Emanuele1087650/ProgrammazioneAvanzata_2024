@@ -19,7 +19,7 @@ enum MESSAGES {
     // For users
     USER_NOT_FOUND = "User not found",
     NO_DATASETS = "There are no datasets",
-    NO_DATASET_ID = "There is no dataset with this id",
+    NO_DATASET_NAME = "There is no dataset with this name",
     DATASET_DELETED = "Dataset deleted succesfully",
     DATASET_DELETION_FAILED = "Error during dataset deletion",
     DATASET_UPDATED = "Dataset updated succesfully",
