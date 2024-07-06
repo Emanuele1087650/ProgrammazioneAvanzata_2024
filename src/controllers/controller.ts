@@ -13,7 +13,7 @@ import { Transaction } from "sequelize";
 const sendResponse = new ResponseSender()
 const sendError = new ErrorSender()
 const resFactory = new ResponseFactory()
-const errorHandler = new ErrorFactory();
+const errFactory = new ErrorFactory();
 const sequelize = SequelizeDB.getConnection();
 
 
@@ -29,7 +29,6 @@ export async function createDatasets(req: any, res: any) {
   const transaction = await sequelize.transaction();
   const name_dataset = req.body["name"]
   const user = req.user;
-
   try{
     const newDataset = await Dataset.createDataset({
       name_dataset: name_dataset,
@@ -41,7 +40,7 @@ export async function createDatasets(req: any, res: any) {
       fs.mkdirSync(dir, { recursive: true });
     } else {
       await transaction.rollback();
-      throw errorHandler.createError(ErrorType.DATASET_ALREADY_EXIST);
+      throw errFactory.createError(ErrorType.DATASET_ALREADY_EXIST);
     }
     await transaction.commit();
     const response = resFactory.createResponse(ResponseType.UPLOAD_DATASET)

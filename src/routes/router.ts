@@ -8,6 +8,7 @@ const router = express.Router();
 
 router.post(
     "/createDataset",
+    Middleware.DATASET,
     async function (req: any, res: any) {
         Controller.createDatasets(req, res);
     }
@@ -15,6 +16,7 @@ router.post(
 
 router.post(
     "/deleteDataset",
+    Middleware.DATASET,
     async function (req: any, res: any) {
         Controller.deleteDataset(req, res);
     }
@@ -29,6 +31,7 @@ router.post(
 
 router.post(
     "/updateDataset",
+    Middleware.UPDATE,
     async function (req: any, res: any) {
         Controller.updateDataset(req, res);
     }

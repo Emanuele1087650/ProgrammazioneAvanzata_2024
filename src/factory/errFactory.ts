@@ -13,6 +13,7 @@ enum ErrorType {
     INVALID_TOKEN,
     MALFORMED_PAYLOAD,
     MISSING_BODY,
+    INVALID_BODY,
     ROUTE_NOT_FOUND,
     UNAUTHORIZED,
     BAD_REQUEST,
@@ -49,6 +50,7 @@ class ErrorFactory {
         [ErrorType.INVALID_TOKEN]: { code: HttpStatusCode.FORBIDDEN, message: Messages.INVALID_TOKEN },
         [ErrorType.MALFORMED_PAYLOAD]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.MALFORMED_PAYLOAD },
         [ErrorType.MISSING_BODY]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.MISSING_BODY },
+        [ErrorType.INVALID_BODY]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.INVALID_BODY },
 
         [ErrorType.ROUTE_NOT_FOUND]: { code: HttpStatusCode.NOT_FOUND, message: Messages.ROUTE_NOT_FOUND },
         [ErrorType.UNAUTHORIZED]: { code: HttpStatusCode.UNAUTHORIZED, message: Messages.UNAUTHORIZED },

@@ -1,5 +1,5 @@
 import * as Authorization from "./authorization";
-//import * as validation from "./validation";
+import * as Validation from "./validation";
 
 export const AUTH = [
   Authorization.verifyHeader,
@@ -7,4 +7,14 @@ export const AUTH = [
   Authorization.verifyJWT,
   Authorization.verifyPayload,
   Authorization.verifyUser
+];
+
+export const DATASET = [
+  Validation.validateBody,
+  Validation.validateDataset,
+];
+
+export const UPDATE = [
+  Validation.validateBody,
+  Validation.validateUpdate,
 ];
