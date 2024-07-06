@@ -5,9 +5,10 @@ const errFactory = new ErrorFactory();
 function validateKeys(dataset: any, requiredKeys: string[], res: any): boolean {
     const datasetKeys = Object.keys(dataset);
     const hasAllRequiredKeys = requiredKeys.every(key => datasetKeys.includes(key));
+    const hasExactKeys = datasetKeys.length === requiredKeys.length;
     const areValuesValid = requiredKeys.every(key => typeof dataset[key] === 'string' && dataset[key].trim() !== '');
 
-    if (!hasAllRequiredKeys || !areValuesValid) {
+    if (!hasAllRequiredKeys || !hasExactKeys || !areValuesValid) {
         const error = errFactory.createError(ErrorType.INVALID_BODY);
         res.status(error.code).json({ message: error.message });
         return false;
