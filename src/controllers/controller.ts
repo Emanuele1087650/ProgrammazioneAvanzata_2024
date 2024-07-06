@@ -3,7 +3,7 @@ import ErrorSender from "../utils/error_sender";
 import ResponseSender from "../utils/response_sender";
 import HttpStatusCode from "../utils/status_code"
 import { ResponseFactory, ResponseType } from "../factory/resFactory";
-import { createRequest, Request, updateRequest } from "../models/request";
+//import { createRequest, Request, updateRequest } from "../models/request";
 import { SequelizeDB } from "../singleton/sequelize";
 import { ErrorFactory, ErrorType } from "../factory/errFactory";
 //import { myQueue } from '../singleton/queueManager';
