@@ -1,4 +1,4 @@
-import { getAllUser, getUserByUsername } from "../models/users";
+//import { getAllUser, getUserByUsername } from "../models/users";
 import ErrorSender from "../utils/error_sender";
 import ResponseSender from "../utils/response_sender";
 import HttpStatusCode from "../utils/status_code"
