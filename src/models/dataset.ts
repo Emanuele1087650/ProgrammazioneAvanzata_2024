@@ -54,8 +54,10 @@ class Dataset extends Model {
     return dataset[0];
   }
 
-  static async getAllDataset() {
-    const datasets = await Dataset.findAll()
+  static async getAllDataset(user: any) {
+    const datasets = await Dataset.findAll({where: {
+      id_creator: user.id_user,
+    },})
     if(!datasets) {
       throw errorHandler.createError(ErrorType.INTERNAL_ERROR);
     }

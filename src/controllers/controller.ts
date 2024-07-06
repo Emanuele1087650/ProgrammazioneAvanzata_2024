@@ -19,7 +19,7 @@ const sequelize = SequelizeDB.getConnection();
 
 export async function getAllDatasets(req: any, res: any) {
   try {
-    sendResponse.send(res, HttpStatusCode.OK, await Dataset.getAllDataset());
+    sendResponse.send(res, HttpStatusCode.OK, await Dataset.getAllDataset(req.user));
   } catch(error: any) {
     sendError.send(res, error.code, error.message);
   }
@@ -129,7 +129,6 @@ export async function per_dopo (req: any, res: any) {
 export async function deleteDataset(req: any, res: any) {
   try {
     const dataset = await Dataset.getDatasetByName(req.body["name"], req.user);
-    console.log(dataset)
     await dataset.deleteDataset();
     const response = resFactory.createResponse(ResponseType.DATASET_DELETED)
     sendResponse.send(res, response.code, response.message);
