@@ -4,16 +4,17 @@ import HttpStatusCode from "../utils/status_code"
 import { ResponseFactory, ResponseType } from "../factory/resFactory";
 import { SequelizeDB } from "../singleton/sequelize";
 import { ErrorFactory, ErrorType } from "../factory/errFactory";
-//import { myQueue } from '../singleton/queueManager';
 import { Dataset } from '../models/dataset';
 import { User } from "../models/users";
 import { Request } from "../models/request";
 import path from 'path';
 import multer from 'multer';
+import { inferenceQueue } from '../queue/queue';
+import { Queue, Job } from 'bullmq';
 
-const sendResponse = new ResponseSender()
-const sendError = new ErrorSender()
-const resFactory = new ResponseFactory()
+const sendResponse = new ResponseSender();
+const sendError = new ErrorSender();
+const resFactory = new ResponseFactory();
 const errFactory = new ErrorFactory();
 const sequelize = SequelizeDB.getConnection();
 const dataset_obj = new Dataset();
@@ -81,6 +82,7 @@ export async function updateDataset(req: any, res: any) {
   }
 }
 
+
 export async function upload(req: any, res: any) {
 
   try{
@@ -136,19 +138,17 @@ export async function upload(req: any, res: any) {
   */
 }
 
-export async function inference(req: any, res: any) {
+export async function addQueue(req: any, res: any) {
   
-  const transaction = await SequelizeDB.getConnection().transaction();
-  //validate_body(req.body)
-  const name_dataset = req.body["name"];
+  const name_dataset = req.body["dataset"];
   const model = req.body["model"];
   const cam_det = req.body["cam_det"];
   const cam_cls = req.body["cam_cls"]; 
   
   try {
-    const user = await user_obj.getUserByUsername(req.username);
+    const user = req.user
     const dataset = await dataset_obj.getDatasetByName(name_dataset, user);
-    
+
     var fs = require('fs');
     var dir = `/usr/app/Datasets/${user.username}/${dataset.name_dataset}`;
     const files = fs.readdirSync(dir);
@@ -156,43 +156,41 @@ export async function inference(req: any, res: any) {
       throw errFactory.createError(ErrorType.DATASET_EMPTY);
     }
 
-    const request = {
-      metadata: {
-        operation: "inference",
-        user: req.username
-      },
-      req_cost: 0, 
-      timestamp: Date.now(),
-      req_user: user.id_user,
-      req_dataset: dataset.id_dataset
-    };
+    const job = await inferenceQueue.add('inference', {
+      user,
+      name_dataset,
+      model,
+      cam_det,
+      cam_cls
+    }).catch(() => {
+      throw errFactory.createError(ErrorType.ADD_QUEUE_FAILED);
+    });
 
-    await request_obj.createRequest(request, transaction);
-
-    if (user.tokens > request.req_cost) {
-      const response: any = await fetch(`http://127.0.0.1:8000/inference`, {
-        method: 'POST',
-        body: JSON.stringify({
-          user: user.username,
-          dataset: dataset.name_dataset,
-          model: model,
-          cam_det: cam_det,
-          cam_cls: cam_cls
-        })
-      });
-      if (response.body !== null) {
-        await request_obj.updateRequest(user.id_user, dataset.id_dataset, 'COMPLETED', transaction);
-        sendResponse.send(res, HttpStatusCode.OK, {request: request, response: await response.json()})
-      } else {
-        await request_obj.updateRequest(user.id_user, dataset.id_dataset, 'FAILED', transaction);
-        throw errFactory.createError(ErrorType.INFERENCE_FAILED);
-      }
-    } else {
-      await request_obj.updateRequest(user.id_user, dataset.id_dataset, 'ABORTED', transaction);
-      throw errFactory.createError(ErrorType.INFERENCE_ABORTED);
-    }
+    res.status(HttpStatusCode.OK).json({message: "Inference added to queue", jobId: job.id})
 
   } catch(error: any) {
+    sendError.send(res, error.code, error.message);
+  }
+}
+
+export async function getJob(req: any, res: any) {
+
+  const jobId = req.body["jobId"];
+  try {
+    const job: Job | undefined = await inferenceQueue.getJob(jobId);
+    if (job) {
+      if (await job.isCompleted()) {
+        const result = await job.returnvalue;
+        res.status(200).send({ status: 'COMPLETED', result });
+      } else if (await job.isFailed()) {
+        res.status(200).send({ status: 'FAILED', error: job.failedReason });
+      } else {
+        res.status(200).send({ status: await job.getState() });
+      }
+    } else {
+      throw errFactory.createError(ErrorType.JOB_NOT_FOUND);
+    }
+  } catch (error: any) {
     sendError.send(res, error.code, error.message);
   }
 

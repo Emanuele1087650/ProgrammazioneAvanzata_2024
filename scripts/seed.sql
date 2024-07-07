@@ -32,5 +32,9 @@ INSERT INTO users (username, email, role) VALUES
 ('user2', 'user2@email.com', 'USER'),
 ('admin1', 'admin1@email.com', 'ADMIN');;
 
+INSERT INTO dataset (name_dataset, id_creator) VALUES
+('dataset1', 1),
+('dataset2', 1);;
+
 SET timezone = 'Europe/Rome';
 

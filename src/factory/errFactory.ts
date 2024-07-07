@@ -34,7 +34,9 @@ enum ErrorType {
     DATASET_ALREADY_EXIST,
     DATASET_EMPTY,
     INFERENCE_FAILED,
-    INFERENCE_ABORTED
+    INFERENCE_ABORTED,
+    ADD_QUEUE_FAILED,
+    JOB_NOT_FOUND
 }
 
 class CustomError extends Error {
@@ -79,7 +81,9 @@ class ErrorFactory {
         [ErrorType.DATASET_ALREADY_EXIST]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.DATASET_ALREADY_EXIST },
         [ErrorType.DATASET_EMPTY]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.DATASET_EMPTY },
         [ErrorType.INFERENCE_FAILED]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.INFERENCE_FAILED },
-        [ErrorType.INFERENCE_ABORTED]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.INFERENCE_ABORTED }
+        [ErrorType.INFERENCE_ABORTED]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.INFERENCE_ABORTED },
+        [ErrorType.ADD_QUEUE_FAILED]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.ADD_QUEUE_FAILED },
+        [ErrorType.JOB_NOT_FOUND]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.JOB_NOT_FOUND }
     };
 
     createError(type: ErrorType): CustomError {

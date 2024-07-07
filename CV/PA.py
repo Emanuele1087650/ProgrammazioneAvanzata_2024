@@ -13,14 +13,18 @@ import zipfile
 
 app = Flask(__name__)
 
-@app.route("/inference/<string:user>/<string:dataset>", defaults={'model': 'v10', 'cam_detection': False, 'cam_cls': False})
-@app.route("/inference/<string:user>/<string:dataset>/<string:model>/<string:cam_detection>/<string:cam_cls>")
-def inference(user, dataset, model, cam_detection, cam_cls):
-    result_inference = {}
+@app.route("/inference", methods=['POST'])
+def inference():
     
-    cam_detection = eval(cam_detection)
-    cam_cls = eval(cam_cls)
-    dataset=f"Datasets/{user}/{dataset}/"
+    data = request.get_json() 
+    user = data["user"]
+    name_dataset = data["name"] 
+    model = data["model"]
+    cam_detection = eval(data["cam_det"])
+    cam_cls = eval(data["cam_cls"])
+
+    result_inference = {}
+    dataset=f"/usr/app/Datasets/{user}/{name_dataset}/"
     try:
         images=os.listdir(dataset)
     except:
@@ -113,7 +117,7 @@ def inference(user, dataset, model, cam_detection, cam_cls):
         labels_dict = {f"detection {i}": f"{names[i]} {labels[i]*100}%" for i, _ in enumerate(labels)}
         labels_dict_cam = {f"cam {i}": url_for('static', filename=f'{user}/{image_name}/classificazione/eigen_cam{i}.jpg', _external=True) for i, _ in enumerate(labels_cam)}
         
-        result_inference[f"results for image: {image_name}"] = {
+        result_inference[f"results for image {image_name}"] = {
             "detection": num_detect,
             "result": labels_dict,
             "url": url_for('static', filename=f'{user}/{image_name}/detection.jpg', _external=True),

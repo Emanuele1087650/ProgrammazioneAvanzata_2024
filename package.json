@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon -L src/index.ts"
+    "start": "nodemon -L src/index.ts",
+    "start-server": "ts-node src/queue/server.ts",
+    "start-worker": "ts-node src/queue/worker.ts"
   },
   "keywords": [],
   "author": "",

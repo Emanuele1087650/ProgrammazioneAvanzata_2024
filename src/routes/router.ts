@@ -51,7 +51,14 @@ router.post(
     "/inference",
     Middleware.INFERENCE,
     async function (req: any, res: any) {
-        Controller.inference(req, res);
+        Controller.addQueue(req, res);
+    }
+);
+
+router.post(
+    "/job",
+    async function (req: any, res: any) {
+        Controller.getJob(req, res);
     }
 );
 
