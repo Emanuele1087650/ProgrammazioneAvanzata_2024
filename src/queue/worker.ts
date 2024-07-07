@@ -9,8 +9,6 @@ const redisOptions: RedisOptions = {
   port: Number(process.env.REDIS_PORT),
 };
 
-console.log("AOOOOAOAOAOAOOAOAOAOAOAOAOAOAOAOOAOAOAOAOAOOAOAOA")
-
 const inferenceWorker = new Worker('inferenceQueue', async (job: Job) => {
     const { user, name_dataset, model, cam_det, cam_cls } = job.data;
     console.log(job.data)

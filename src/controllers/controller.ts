@@ -31,11 +31,11 @@ export async function getAllDatasets(req: any, res: any) {
 
 export async function createDatasets(req: any, res: any) {
   const transaction = await sequelize.transaction();
-  const name_dataset = req.body["name"]
+  const name_dataset = req.body["name"];
   const user = req.user;
 
   try{
-    await createDatasets({
+    await dataset_obj.createDataset({
       name_dataset: name_dataset,
       id_creator: user.id_user,
     }, 
@@ -82,7 +82,6 @@ export async function updateDataset(req: any, res: any) {
   }
 }
 
-
 export async function upload(req: any, res: any) {
 
   try{
@@ -91,10 +90,13 @@ export async function upload(req: any, res: any) {
     const dataset_name = req.body.name;
     const file = req.files[0];
     const user = req.user;
-
+    
     const dataset = await dataset_obj.getDatasetByName(dataset_name, user);
 
     const dir = `/usr/app/Datasets/${user.username}/${dataset_name}`;
+    if (!fs.existsSync(dir)) {
+      throw errFactory.createError(ErrorType.NO_DATASET_NAME);
+    }
 
     const filePath = path.join(dir, file.originalname);
     fs.writeFileSync(filePath, file.buffer);
@@ -114,7 +116,7 @@ export async function addQueue(req: any, res: any) {
   const cam_cls = req.body["cam_cls"]; 
   
   try {
-    const user = req.user
+    const user = req.user;
     const dataset = await dataset_obj.getDatasetByName(name_dataset, user);
 
     var fs = require('fs');
@@ -161,7 +163,6 @@ export async function getJob(req: any, res: any) {
   } catch (error: any) {
     sendError.send(res, error.code, error.message);
   }
-
 }
 
 /*
