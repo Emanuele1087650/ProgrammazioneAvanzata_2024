@@ -17,6 +17,7 @@ app = Flask(__name__)
 def inference():
     
     data = request.get_json() 
+    job_id = data["job_id"]
     user = data["user"]
     name_dataset = data["name"] 
     model = data["model"]
@@ -52,7 +53,7 @@ def inference():
         image_name = os.path.splitext(os.path.basename(image))[0]
         images_det.append(image_name)
 
-        result_path = f"static/{user}/{image_name}"
+        result_path = f"static/{user}/inference {job_id} - {name_dataset}/{image_name}"
         classification_path = f"{result_path}/classificazione"
 
         os.makedirs(result_path, exist_ok=True)

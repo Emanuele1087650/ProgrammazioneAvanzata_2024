@@ -17,6 +17,7 @@ const inferenceWorker = new Worker('inferenceQueue', async (job: Job) => {
         'Content-Type': 'application/json'
         },
         body: JSON.stringify({
+            job_id: job.id,
             user: user.username,
             name: name_dataset,
             model: model,
