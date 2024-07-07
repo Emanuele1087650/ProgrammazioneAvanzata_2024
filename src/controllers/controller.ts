@@ -8,6 +8,8 @@ import { ErrorFactory, ErrorType } from "../factory/errFactory";
 import { Dataset } from '../models/dataset';
 import { User } from "../models/users";
 import { Request } from "../models/request";
+import path from 'path';
+import multer from 'multer';
 
 const sendResponse = new ResponseSender()
 const sendError = new ErrorSender()
@@ -77,6 +79,61 @@ export async function updateDataset(req: any, res: any) {
   } catch(error: any) {
     sendError.send(res, error.code, error.message);
   }
+}
+
+export async function upload(req: any, res: any) {
+
+  try{
+    var fs = require('fs');
+  
+    const dataset_name = req.body.name;
+    const file = req.files[0];
+    const user = req.user;
+
+    const dataset = await dataset_obj.getDatasetByName(dataset_name, user);
+
+    const dir = `/usr/app/Datasets/${user.username}/${dataset_name}`;
+
+    const filePath = path.join(dir, file.originalname);
+    fs.writeFileSync(filePath, file.buffer);
+
+    const response = resFactory.createResponse(ResponseType.FILE_UPLOADED)
+    sendResponse.send(res, response.code, response.message);
+  } catch(error: any) {
+    sendError.send(res, error.code, error.message);
+  }
+  
+  
+  /*
+
+  var fs = require('fs');
+
+  // Configurazione di multer
+  //const storage = multer.memoryStorage(); // Usa memoryStorage per evitare di salvare il file direttamente
+  //const upload = multer({ storage: storage }).single('dataset');
+  const upload = multer().single('dataset');
+    
+  upload(req, res, () => {
+    const dataset_name = req.body.name;
+    const file = req.file;
+    const user = req.user;
+
+    if (!file || !dataset_name) {
+      return res.status(400).send('Missing file or dataset name');
+    }
+
+    const dir = `/usr/app/Datasets/${user.username}/${dataset_name}`;
+
+    if (!fs.existsSync(dir)){
+      fs.mkdirSync(dir, { recursive: true });
+    }
+
+    const filePath = path.join(dir, file.originalname);
+    fs.writeFileSync(filePath, file.buffer);
+
+    res.send('File and JSON received successfully!');
+  });
+  */
 }
 
 export async function inference(req: any, res: any) {

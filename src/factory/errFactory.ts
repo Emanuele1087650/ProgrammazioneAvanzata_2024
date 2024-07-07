@@ -14,6 +14,7 @@ enum ErrorType {
     MALFORMED_PAYLOAD,
     MISSING_BODY,
     INVALID_BODY,
+    INVALID_FORMAT,
     ROUTE_NOT_FOUND,
     UNAUTHORIZED,
     BAD_REQUEST,
@@ -54,6 +55,7 @@ class ErrorFactory {
         [ErrorType.MALFORMED_PAYLOAD]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.MALFORMED_PAYLOAD },
         [ErrorType.MISSING_BODY]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.MISSING_BODY },
         [ErrorType.INVALID_BODY]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.INVALID_BODY },
+        [ErrorType.INVALID_FORMAT]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.INVALID_FORMAT },
 
         [ErrorType.ROUTE_NOT_FOUND]: { code: HttpStatusCode.NOT_FOUND, message: Messages.ROUTE_NOT_FOUND },
         [ErrorType.UNAUTHORIZED]: { code: HttpStatusCode.UNAUTHORIZED, message: Messages.UNAUTHORIZED },

@@ -23,3 +23,9 @@ export const INFERENCE = [
   Validation.validateBody,
   Validation.validateInference,
 ]
+
+export const UPLOAD = [
+  Validation.validateBody,
+  Validation.validateDataset,
+  //Validation.validateFile,
+];

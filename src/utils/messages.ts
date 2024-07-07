@@ -7,6 +7,7 @@ enum MESSAGES {
     MALFORMED_PAYLOAD = "Bad Request - Payload malformed",
     MISSING_BODY = "Empty request body",
     INVALID_BODY = "invalid request body",
+    INVALID_FORMAT = "Bad request - Invalid file format",
   
     ROUTE_NOT_FOUND = "Not Found - Route not found",
     UNAUTHORIZED = "Error - Unauthorized",
@@ -27,6 +28,7 @@ enum MESSAGES {
     DATASET_DELETED = "Dataset deleted succesfully",
     DATASET_DELETION_FAILED = "Error during dataset deletion",
     DATASET_UPDATED = "Dataset updated succesfully",
+    FILE_UPLOADED = "File uploaded succesfully",
   
     // For requests
     REQUEST_ACCEPTED = "Request accepted",

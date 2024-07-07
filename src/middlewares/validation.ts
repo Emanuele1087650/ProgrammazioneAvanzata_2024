@@ -46,3 +46,28 @@ export function validateInference(req: any, res: any, next: any): void {
         next();
     }
 }
+
+export function validateFile(req: any, res: any, next: any): void {
+    if (!(req.files.length === 1)){
+
+        const error = errFactory.createError(ErrorType.BAD_REQUEST);
+        res.status(error.code).json({ message: error.message });
+    }
+    const file = req.files[0];
+    if(!(file.fieldname === 'dataset')){
+        const error = errFactory.createError(ErrorType.BAD_REQUEST);
+        res.status(error.code).json({ message: error.message });
+    }
+    const mimetype = file.mimetype;
+
+    const isImage = mimetype.startsWith('image/');
+    const isZip = mimetype === 'application/zip';
+
+    if (!isImage && !isZip) {
+        const error = errFactory.createError(ErrorType.INVALID_FORMAT);
+        res.status(error.code).json({ message: error.message });
+        return;
+    }
+    
+    next();
+}

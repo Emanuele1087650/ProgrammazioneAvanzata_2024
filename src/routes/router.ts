@@ -1,10 +1,11 @@
 import express from "express";
 //import * as Controller from "../controllers/controller_vecchio";
 import * as Middleware from "../middlewares/middleware";
-
 import * as Controller from "../controllers/controller";
+import multer from 'multer';
 
 const router = express.Router();
+const upload = multer().any();
 
 router.post(
     "/createDataset",
@@ -38,7 +39,12 @@ router.post(
 );
 
 router.post(
-    "/upload"
+    "/upload",
+    upload,
+    Middleware.UPLOAD,
+    async function (req: any, res: any) {
+        Controller.upload(req, res);
+    }
 );
 
 router.post(
