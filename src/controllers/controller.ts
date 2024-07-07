@@ -82,14 +82,13 @@ export async function updateDataset(req: any, res: any) {
 export async function inference(req: any, res: any) {
   
   const transaction = await SequelizeDB.getConnection().transaction();
-  //validate_body(req.body)
-  const name_dataset = req.body["name"];
+  const name_dataset = req.body["dataset"];
   const model = req.body["model"];
   const cam_det = req.body["cam_det"];
   const cam_cls = req.body["cam_cls"]; 
   
   try {
-    const user = await user_obj.getUserByUsername(req.username);
+    const user = req.user
     const dataset = await dataset_obj.getDatasetByName(name_dataset, user);
     
     var fs = require('fs');
@@ -100,6 +99,7 @@ export async function inference(req: any, res: any) {
     }
 
     const request = {
+      req_status: 'PENDING',
       metadata: {
         operation: "inference",
         user: req.username
@@ -111,21 +111,32 @@ export async function inference(req: any, res: any) {
     };
 
     await request_obj.createRequest(request, transaction);
+    transaction.commit()
 
     if (user.tokens > request.req_cost) {
-      const response: any = await fetch(`http://127.0.0.1:8000/inference`, {
+      const response: any = await fetch("http://cv:8000/inference", {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({
           user: user.username,
-          dataset: dataset.name_dataset,
+          name: name_dataset,
           model: model,
           cam_det: cam_det,
           cam_cls: cam_cls
         })
+      }).catch((error) => {
+        console.log(error)
+        throw errFactory.createError(ErrorType.INFERENCE_FAILED);
       });
       if (response.body !== null) {
-        await request_obj.updateRequest(user.id_user, dataset.id_dataset, 'COMPLETED', transaction);
-        sendResponse.send(res, HttpStatusCode.OK, {request: request, response: await response.json()})
+        const transaction2 = await SequelizeDB.getConnection().transaction();
+        await request_obj.updateRequest(user.id_user, dataset.id_dataset, 'COMPLETED', transaction2).catch(() => {
+          transaction2.rollback();
+        });
+        transaction2.commit();
+        sendResponse.send(res, HttpStatusCode.OK, await response.json());
       } else {
         await request_obj.updateRequest(user.id_user, dataset.id_dataset, 'FAILED', transaction);
         throw errFactory.createError(ErrorType.INFERENCE_FAILED);

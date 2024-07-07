@@ -41,7 +41,7 @@ export function validateUpdate(req: any, res: any, next: any): void {
 }
 
 export function validateInference(req: any, res: any, next: any): void {
-    const requiredKeys = ["name", "model", "cam_det", "cam_cls"];
+    const requiredKeys = ["dataset", "model", "cam_det", "cam_cls"];
     if (validateKeys(req.body, requiredKeys, res)) {
         next();
     }

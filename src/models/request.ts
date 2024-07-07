@@ -41,15 +41,13 @@ class Request extends Model implements RequestData{
         req_status: req_status
       }, {
         where: {
-          id_user: id_user,
-          id_dataset: id_dataset
+          req_user: id_user,
+          req_dataset: id_dataset
         },
         transaction: transaction
-      }).catch(() => {
-        throw errorHandler.createError(ErrorType.BAD_REQUEST); 
       });
     } catch {
-      throw new Error('Error during request update');
+      throw errorHandler.createError(ErrorType.BAD_REQUEST); 
     }
   }
 
@@ -83,20 +81,6 @@ class Request extends Model implements RequestData{
       throw errorHandler.createError(ErrorType.BAD_REQUEST);
     }
     return requests;
-  }
-
-  async inference(user: any, dataset: any, request: any, transaction: Transaction, model?: string, cam_det?: boolean, cam_cls?: boolean) {
-    await this.createRequest(request, transaction);
-    if (user.tokens > request.req_cost) {
-      const response = await fetch(`http://127.0.0.1:8000/inference/${user.username}/${dataset.name}/${model}/${cam_det}/${cam_cls}`, {
-        method: 'POST'
-      });
-      if (response.body !== null) {
-        await this.updateRequest(user.id_user, dataset.id_dataset, 'COMPLETED', transaction) 
-        return response
-      }
-    }
-    await this.updateRequest(user.id_user, dataset.id_dataset, 'ABORTED', transaction) 
   }
 
 }

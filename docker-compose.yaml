@@ -21,7 +21,7 @@ services:
   cv:
     build: ./CV
     ports:
-      - 8000:5000
+      - 8000:8000
     restart: always
     volumes:
       - ./CV:/usr/app/src
