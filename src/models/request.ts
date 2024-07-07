@@ -16,7 +16,7 @@ interface RequestData {
   req_dataset?: number;
 }
 
-class Request extends Model {
+class Request extends Model implements RequestData{
   public id_request!: number;
   public req_status!: string;
   public metadata!: any;
@@ -25,7 +25,7 @@ class Request extends Model {
   public req_user!: number;
   public req_dataset!: number;
 
-  static async createRequest(data: any, transaction: Transaction) {
+  async createRequest(data: any, transaction: Transaction) {
     try {
       const result = await Request.create(data, { transaction });
       return result;
@@ -35,19 +35,25 @@ class Request extends Model {
     }
   }
 
-  public async updateRequest(id_user: number, id_dataset: number, req_status: string, transaction: Transaction) {
+  async updateRequest(id_user: number, id_dataset: number, req_status: string, transaction: Transaction) {
     try {
-      const result = await this.update({ req_status: req_status }, {transaction});
-      if (result[0] === 0) {
-        throw errorHandler.createError(ErrorType.BAD_REQUEST);
-      }
-    } catch (error) {
-      await transaction.rollback();
-      throw errorHandler.createError(ErrorType.INTERNAL_ERROR);
+      await Request.update({
+        req_status: req_status
+      }, {
+        where: {
+          id_user: id_user,
+          id_dataset: id_dataset
+        },
+        transaction: transaction
+      }).catch(() => {
+        throw errorHandler.createError(ErrorType.BAD_REQUEST); 
+      });
+    } catch {
+      throw new Error('Error during request update');
     }
   }
 
-  static async getAllRequests() {
+  async getAllRequests() {
     const requests = await Request.findAll();
     if (!requests || requests.length === 0) {
       throw errorHandler.createError(ErrorType.BAD_REQUEST);
@@ -55,7 +61,7 @@ class Request extends Model {
     return requests;
   }
 
-  static async getRequestsByUser(id_user: number) {
+  async getRequestsByUser(id_user: number) {
     const requests = await Request.findAll({ where: { req_user: id_user } });
     if (!requests || requests.length === 0) {
       throw errorHandler.createError(ErrorType.BAD_REQUEST);
@@ -63,7 +69,7 @@ class Request extends Model {
     return requests;
   }
 
-  static async getRequestsByDataset(id_dataset: number) {
+  async getRequestsByDataset(id_dataset: number) {
     const requests = await Request.findAll({ where: { req_dataset: id_dataset } });
     if (!requests || requests.length === 0) {
       throw errorHandler.createError(ErrorType.BAD_REQUEST);
@@ -71,7 +77,7 @@ class Request extends Model {
     return requests;
   }
 
-  static async getRequestsByUserAndDataset(id_user: number, id_dataset: number) {
+  async getRequestsByUserAndDataset(id_user: number, id_dataset: number) {
     const requests = await Request.findAll({ where: { req_user: id_user, req_dataset: id_dataset } });
     if (!requests || requests.length === 0) {
       throw errorHandler.createError(ErrorType.BAD_REQUEST);
@@ -79,19 +85,20 @@ class Request extends Model {
     return requests;
   }
 
-  static async inference(user: any, dataset: any, request: any, transaction: Transaction, model?: string, cam_det?: boolean, cam_cls?: boolean) {
+  async inference(user: any, dataset: any, request: any, transaction: Transaction, model?: string, cam_det?: boolean, cam_cls?: boolean) {
     await this.createRequest(request, transaction);
     if (user.tokens > request.req_cost) {
       const response = await fetch(`http://127.0.0.1:8000/inference/${user.username}/${dataset.name}/${model}/${cam_det}/${cam_cls}`, {
         method: 'POST'
       });
       if (response.body !== null) {
-        await request.updateRequest(user.id_user, dataset.id_dataset, 'COMPLETED', transaction) 
+        await this.updateRequest(user.id_user, dataset.id_dataset, 'COMPLETED', transaction) 
         return response
       }
     }
-    await request.updateRequest(user.id_user, dataset.id_dataset, 'ABORTED', transaction) 
+    await this.updateRequest(user.id_user, dataset.id_dataset, 'ABORTED', transaction) 
   }
+
 }
 
 Request.init({

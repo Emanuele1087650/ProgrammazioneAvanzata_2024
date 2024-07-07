@@ -7,7 +7,6 @@ function validateKeys(dataset: any, requiredKeys: string[], res: any): boolean {
     const hasAllRequiredKeys = requiredKeys.every(key => datasetKeys.includes(key));
     const hasExactKeys = datasetKeys.length === requiredKeys.length;
     const areValuesValid = requiredKeys.every(key => typeof dataset[key] === 'string' && dataset[key].trim() !== '');
-
     if (!hasAllRequiredKeys || !hasExactKeys || !areValuesValid) {
         const error = errFactory.createError(ErrorType.INVALID_BODY);
         res.status(error.code).json({ message: error.message });
@@ -19,7 +18,6 @@ function validateKeys(dataset: any, requiredKeys: string[], res: any): boolean {
 export function validateBody(req: any, res: any, next: any): void {
     const dataset = req.body;
     const datasetKeys = Object.keys(dataset);
-
     if (datasetKeys.length === 0) {
         const error = errFactory.createError(ErrorType.MISSING_BODY);
         res.status(error.code).json({ message: error.message });
@@ -37,6 +35,13 @@ export function validateDataset(req: any, res: any, next: any): void {
 
 export function validateUpdate(req: any, res: any, next: any): void {
     const requiredKeys = ["name", "new_name"];
+    if (validateKeys(req.body, requiredKeys, res)) {
+        next();
+    }
+}
+
+export function validateInference(req: any, res: any, next: any): void {
+    const requiredKeys = ["name", "model", "cam_det", "cam_cls"];
     if (validateKeys(req.body, requiredKeys, res)) {
         next();
     }

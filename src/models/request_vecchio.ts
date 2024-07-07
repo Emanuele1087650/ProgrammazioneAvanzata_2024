@@ -68,7 +68,7 @@ export async function getRequestById(id_request: number) {
 export async function updateRequest(id_user: number, id_dataset: number, req_status: string, transaction: Transaction) {
   try {
     await Request.update({
-      req_status: "COMPLETED"
+      req_status: req_status
     }, {
       where: {
         id_user: id_user,

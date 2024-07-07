@@ -42,7 +42,11 @@ router.post(
 );
 
 router.post(
-    "/inference"
+    "/inference",
+    Middleware.INFERENCE,
+    async function (req: any, res: any) {
+        Controller.inference(req, res);
+    }
 );
 
 router.post(

@@ -18,3 +18,8 @@ export const UPDATE = [
   Validation.validateBody,
   Validation.validateUpdate,
 ];
+
+export const INFERENCE = [
+  Validation.validateBody,
+  Validation.validateInference,
+]

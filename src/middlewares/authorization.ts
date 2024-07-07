@@ -2,6 +2,8 @@ require("dotenv").config();
 import jwt from "jsonwebtoken";
 import { User } from "../models/users";
 
+const user_obj = new User();
+
 export function verifyHeader(req: any, res: any, next: any): void {
   if (req.headers.authorization) next();
   else {
@@ -49,7 +51,7 @@ export function verifyPayload(req: any, res: any, next: any): void {
 
 export async function verifyUser(req: any, res: any, next: any) {
   try {
-    const user = await User.getUserByUsername(req.username);
+    const user = await user_obj.getUserByUsername(req.username);
     if (!user) {
       res.status(404).json({message: "User not found"});
       return;

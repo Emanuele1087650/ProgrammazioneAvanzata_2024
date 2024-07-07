@@ -16,6 +16,9 @@ enum MESSAGES {
 
     UPLOAD_DATASET = "OK - Dataset loaded",
     DATASET_ALREADY_EXIST = "Bad Request - Dataset already exist",
+    DATASET_EMPTY = "Bad Request - This dataset is empty",
+    INFERENCE_FAILED = "Bad Request - Inference failed",
+    INFERENCE_ABORTED = "Bad Request - Inference aborted",
   
     // For users
     USER_NOT_FOUND = "User not found",
@@ -30,7 +33,6 @@ enum MESSAGES {
     REQUESTS_DENIED = "Requests accepted/denied",
     PENDING_REQUEST = "Request pending for acceptance/denial",
     REQUEST_CREATION_ERROR = "Error - Could not create the request",
-    REQUEST_USER_UNAUTHORIZED_GRAPH = "Unauthorized - You are not the creator of the graph",
     REQUEST_NOT_FOUND = "Request not found or already accepted/denied",
     NO_PENDING_REQUEST = "No pending request",
   

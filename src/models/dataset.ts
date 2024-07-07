@@ -8,21 +8,19 @@ const sequelize = SequelizeDB.getConnection();
 const errorHandler = new ErrorFactory();
 
 interface DatasetData {
-    name_dataset: string;
-    id_creator: number;
-    id_dataset?: number;
-  }
+  name_dataset: string;
+  id_creator: number;
+  id_dataset?: number;
+}
 
-class Dataset extends Model {
+class Dataset extends Model implements DatasetData{
   public id_dataset!: number;
   public name_dataset!: string;
   public id_creator!: number;
 
   // Creazione del dataset
-  static async createDataset(data: any, transaction: Transaction) {
-
-    await Dataset.checkDatasetUser(data.id_creator, data.name_dataset);
-    
+  async createDataset(data: any, transaction: Transaction) {
+    await this.checkDatasetUser(data.id_creator, data.name_dataset);
     await Dataset.create(data, 
     { 
       transaction: transaction 
@@ -41,7 +39,7 @@ class Dataset extends Model {
     return result;
   }
 
-  static async getDatasetByName(name: string, user: any) {
+  async getDatasetByName(name: string, user: any) {
     const dataset = await Dataset.findAll({
       where: {
         name_dataset: name,
@@ -54,7 +52,7 @@ class Dataset extends Model {
     return dataset[0];
   }
 
-  static async getAllDataset(user: any) {
+  async getAllDataset(user: any) {
     const datasets = await Dataset.findAll({where: {
       id_creator: user.id_user,
     },})
@@ -68,12 +66,12 @@ class Dataset extends Model {
   }
 
   // Eliminazione del dataset
-  public async deleteDataset(transaction?: Transaction) {       
+  async deleteDataset(transaction?: Transaction) {       
     await this.destroy({ transaction }).catch(()=>{throw errorHandler.createError(ErrorType.DATASET_DELETION_FAILED);});
   }
 
   // Controllo dataset per utente
-  static async checkDatasetUser(id_user: number, name: string) {
+  async checkDatasetUser(id_user: number, name: string) {
     const datasets = await Dataset.findAll({
       where: {
         name_dataset: name,

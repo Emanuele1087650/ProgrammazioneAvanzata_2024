@@ -12,14 +12,14 @@ interface UserData {
   tokens?: number;
 }
 
-class User extends Model {
+class User extends Model implements UserData{
   public id_user!: number;
   public username!: string;
   public email!: string;
   public role!: 'ADMIN' | 'USER';
   public tokens!: number;
 
-  static async createUser(data: any, transaction: Transaction) {
+  async createUser(data: any, transaction: Transaction) {
     try {
       const result = await User.create(data, { transaction });
       return result;
@@ -29,7 +29,7 @@ class User extends Model {
     }
   }
 
-  static async getUserById(id_user: number) {
+  async getUserById(id_user: number) {
     const user = await User.findByPk(id_user, {
       raw: true,
     });
@@ -39,7 +39,7 @@ class User extends Model {
     return user;
   }
 
-  static async getUserByUsername(username: string) {
+  async getUserByUsername(username: string) {
     const user = await User.findOne({
       where: { username },
     });
@@ -49,7 +49,7 @@ class User extends Model {
     return user;
   }
 
-  static async getAllUsers() {
+  async getAllUsers() {
     const users = await User.findAll();
     if (!users || users.length === 0) {
       throw errorHandler.createError(ErrorType.INTERNAL_ERROR);
@@ -57,7 +57,7 @@ class User extends Model {
     return users;
   }
 
-  static async getBalance(id_user: number) {
+  async getBalance(id_user: number) {
     const user = await User.findByPk(id_user, {
       raw: true,
       attributes: ['tokens'],
@@ -68,7 +68,7 @@ class User extends Model {
     return user.tokens;
   }
 
-  static async updateBalance(id_user: number, new_balance: number, transaction: Transaction) {
+  async updateBalance(id_user: number, new_balance: number, transaction: Transaction) {
     try {
       const result = await User.update({ tokens: new_balance }, {
         where: { id_user },
