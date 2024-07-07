@@ -8,7 +8,6 @@ import { Dataset } from '../models/dataset';
 import { User } from "../models/users";
 import { Request } from "../models/request";
 import path from 'path';
-import multer from 'multer';
 import { inferenceQueue } from '../queue/queue';
 import { Queue, Job } from 'bullmq';
 
@@ -163,15 +162,3 @@ export async function getJob(req: any, res: any) {
     sendError.send(res, error.code, error.message);
   }
 }
-
-/*
-export const addJob = async (req: Request, res: Response) => {
-  try {
-    const jobData = req.body;
-export const addJob = async (req: Request, res: Response) => {
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to add job to queue', error });
-  }
-}; 
-}; 
-*/

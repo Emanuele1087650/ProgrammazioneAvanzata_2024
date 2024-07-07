@@ -70,3 +70,18 @@ export function validateFile(req: any, res: any, next: any): void {
     
     next();
 }
+
+export function validateJob(req: any, res: any, next: any): void {
+    const requiredKeys = ["jobId"];
+    const dataset = req.body;
+    const datasetKeys = Object.keys(dataset);
+    const hasAllRequiredKeys = requiredKeys.every(key => datasetKeys.includes(key));
+    const hasExactKeys = datasetKeys.length === requiredKeys.length;
+    const areValuesValid = requiredKeys.every(key => typeof dataset[key] === 'number');
+    if (!hasAllRequiredKeys || !hasExactKeys || !areValuesValid) {
+        const error = errFactory.createError(ErrorType.INVALID_BODY);
+        res.status(error.code).json({ message: error.message });
+        return;
+    }
+    next();
+}

@@ -56,6 +56,7 @@ router.post(
 
 router.post(
     "/job",
+    Middleware.JOB,
     async function (req: any, res: any) {
         Controller.getJob(req, res);
     }

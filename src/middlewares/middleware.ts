@@ -29,3 +29,8 @@ export const UPLOAD = [
   Validation.validateDataset,
   Validation.validateFile,
 ];
+
+export const JOB = [
+  Validation.validateBody,
+  Validation.validateJob,
+];
