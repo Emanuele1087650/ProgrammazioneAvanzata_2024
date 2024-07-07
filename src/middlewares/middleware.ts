@@ -27,5 +27,5 @@ export const INFERENCE = [
 export const UPLOAD = [
   Validation.validateBody,
   Validation.validateDataset,
-  //Validation.validateFile,
+  Validation.validateFile,
 ];

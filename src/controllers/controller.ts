@@ -104,38 +104,6 @@ export async function upload(req: any, res: any) {
   } catch(error: any) {
     sendError.send(res, error.code, error.message);
   }
-  
-  
-  /*
-
-  var fs = require('fs');
-
-  // Configurazione di multer
-  //const storage = multer.memoryStorage(); // Usa memoryStorage per evitare di salvare il file direttamente
-  //const upload = multer({ storage: storage }).single('dataset');
-  const upload = multer().single('dataset');
-    
-  upload(req, res, () => {
-    const dataset_name = req.body.name;
-    const file = req.file;
-    const user = req.user;
-
-    if (!file || !dataset_name) {
-      return res.status(400).send('Missing file or dataset name');
-    }
-
-    const dir = `/usr/app/Datasets/${user.username}/${dataset_name}`;
-
-    if (!fs.existsSync(dir)){
-      fs.mkdirSync(dir, { recursive: true });
-    }
-
-    const filePath = path.join(dir, file.originalname);
-    fs.writeFileSync(filePath, file.buffer);
-
-    res.send('File and JSON received successfully!');
-  });
-  */
 }
 
 export async function addQueue(req: any, res: any) {
