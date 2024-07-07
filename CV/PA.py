@@ -64,7 +64,7 @@ def inference():
         
         if cam_detection:
             detection_cam(dataset+image, model=MODEL_DET_PATH).save(f'{result_path}/cam_detection.jpg')
-
+        
         image_pil = Image.open(dataset+image)
         bounding_boxes = result[0].boxes.xyxy
         np_array_image2 = cv2.imread(dataset+image)
@@ -97,15 +97,16 @@ def inference():
             img2 = torchvision.transforms.functional.crop(result_image, top, left, height, width)
 
             img3 = torchvision.transforms.ToPILImage()(img2) 
-                    
+
             result2 = model_cls(img3, imgsz=512)
             
+            
             if cam_cls:
-                os.makedirs(classification_path, exist_ok=True)
+                os.makedirs(classification_path, exist_ok=True)                
                 img_res = eigencam_cls(model_cls, img3)
                 cv2.imwrite(f'{classification_path}/eigen_cam{i}.jpg', img_res)
                 labels_cam.append(f"eigen_cam{i}.jpg")
-            
+                
             label = torch.argmax(result2[0].probs.data).item()
             names.append(result2[0].names[label])
             labels.append(round(result2[0].probs.data[label].item(), 2))
@@ -116,13 +117,13 @@ def inference():
         cv2.imwrite(f'{result_path}/detection.jpg', np_array_image2)
         
         labels_dict = {f"detection {i}": f"{names[i]} {labels[i]*100}%" for i, _ in enumerate(labels)}
-        labels_dict_cam = {f"cam {i}": url_for('static', filename=f'{user}/{image_name}/classificazione/eigen_cam{i}.jpg', _external=True) for i, _ in enumerate(labels_cam)}
+        labels_dict_cam = {f"cam {i}": url_for('static', filename=f'{result_path}/classificazione/eigen_cam{i}.jpg', _external=True) for i, _ in enumerate(labels_cam)}
         
         result_inference[f"results for image {image_name}"] = {
             "detection": num_detect,
             "result": labels_dict,
-            "url": url_for('static', filename=f'{user}/{image_name}/detection.jpg', _external=True),
-            "url_cam_detection": url_for('static', filename=f'{user}/{image_name}/cam_detection.jpg', _external=True) if cam_detection else None,
+            "url": url_for('static', filename=f'{result_path}/detection.jpg', _external=True),
+            "url_cam_detection": url_for('static', filename=f'{result_path}/cam_detection.jpg', _external=True) if cam_detection else None,
             "url_cam_classification": labels_dict_cam if cam_cls else None
         }
         
