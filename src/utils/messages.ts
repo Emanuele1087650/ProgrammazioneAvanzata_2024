@@ -19,6 +19,8 @@ enum MESSAGES {
     DATASET_EMPTY = "Bad Request - This dataset is empty",
     INFERENCE_FAILED = "Bad Request - Inference failed",
     INFERENCE_ABORTED = "Bad Request - Inference aborted",
+    ADD_QUEUE_FAILED = "Bad Request - Failed to added queue",
+    JOB_NOT_FOUND = "Bad Request - Job nont found",
   
     // For users
     USER_NOT_FOUND = "User not found",
