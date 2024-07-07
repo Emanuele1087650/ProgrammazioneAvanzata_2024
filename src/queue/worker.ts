@@ -11,8 +11,7 @@ const redisOptions: RedisOptions = {
 
 const inferenceWorker = new Worker('inferenceQueue', async (job: Job) => {
     const { user, name_dataset, model, cam_det, cam_cls } = job.data;
-    console.log(job.data)
-    const response: any = await fetch("http://127.0.0.1:8000/inference", {
+    const response: any = await fetch("http://cv:8000/inference", {
         method: 'POST',
         headers: {
         'Content-Type': 'application/json'

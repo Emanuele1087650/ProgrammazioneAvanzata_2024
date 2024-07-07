@@ -47,7 +47,6 @@ export async function createDatasets(req: any, res: any) {
     if (!fs.existsSync(dir)){
       fs.mkdirSync(dir, { recursive: true });
     } else {
-      await transaction.rollback();
       throw errFactory.createError(ErrorType.DATASET_ALREADY_EXIST);
     }
 
