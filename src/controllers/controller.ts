@@ -1,5 +1,5 @@
 import ErrorSender from "../utils/error_sender";
-import ResponseSender from "../utils/response_sender";
+//import ResponseSender from "../utils/response_sender";
 import HttpStatusCode from "../utils/status_code"
 import { ResponseFactory, ResponseType } from "../factory/resFactory";
 import { SequelizeDB } from "../singleton/sequelize";
@@ -21,18 +21,17 @@ import unzipper from 'unzipper';
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 ffmpeg.setFfmpegPath(ffmpegPath);
 
-const sendResponse = new ResponseSender();
+//const sendResponse = new ResponseSender();
 const sendError = new ErrorSender();
 const resFactory = new ResponseFactory();
 const errFactory = new ErrorFactory();
 const sequelize = SequelizeDB.getConnection();
 const dataset_obj = new Dataset();
 const user_obj = new User();
-const request_obj = new Request();
 
 export async function getAllDatasets(req: any, res: any) {
   try {
-    sendResponse.send(res, HttpStatusCode.OK, await dataset_obj.getAllDataset(req.user));
+    resFactory.send(res, undefined, await dataset_obj.getAllDataset(req.user));
   } catch(error: any) {
     sendError.send(res, error.code, error.message);
   }
@@ -60,8 +59,7 @@ export async function createDatasets(req: any, res: any) {
     }
 
     await transaction.commit();
-    const response = resFactory.createResponse(ResponseType.UPLOAD_DATASET)
-    sendResponse.send(res, response.code, response.message);
+    resFactory.send(res, ResponseType.UPLOAD_DATASET);
   } catch(error: any) {
       await transaction.rollback();
       sendError.send(res, error.code, error.message);
@@ -72,8 +70,7 @@ export async function deleteDataset(req: any, res: any) {
   try {
     const dataset = await dataset_obj.getDatasetByName(req.body["name"], req.user);
     await dataset.deleteDataset();
-    const response = resFactory.createResponse(ResponseType.DATASET_DELETED)
-    sendResponse.send(res, response.code, response.message);
+    resFactory.send(res, ResponseType.DATASET_DELETED);
   } catch(error: any) {
     sendError.send(res, error.code, error.message);
   }
@@ -83,8 +80,7 @@ export async function updateDataset(req: any, res: any) {
   try {
     const dataset = await dataset_obj.getDatasetByName(req.body["name"], req.user);
     await dataset.updateDataset(req);
-    const response = resFactory.createResponse(ResponseType.DATASET_UPDATED)
-    sendResponse.send(res, response.code, response.message);
+    resFactory.send(res, ResponseType.DATASET_UPDATED);
   } catch(error: any) {
     sendError.send(res, error.code, error.message);
   }
@@ -214,15 +210,14 @@ export async function upload(req: any, res: any) {
     */
     
 
-    const response = resFactory.createResponse(ResponseType.FILE_UPLOADED)
-    sendResponse.send(res, response.code, response.message);
+    resFactory.send(res, ResponseType.FILE_UPLOADED);
   } catch(error: any) {
     sendError.send(res, error.code, error.message);
   }
 }
 
 export async function addQueue(req: any, res: any) {
-  
+
   const name_dataset = req.body["dataset"];
   const model = req.body["model"];
   const cam_det = req.body["cam_det"];
@@ -231,44 +226,58 @@ export async function addQueue(req: any, res: any) {
   try {
     const user = req.user;
     const dataset = await dataset_obj.getDatasetByName(name_dataset, user);
-
     var fs = require('fs');
     var dir = `/usr/app/Datasets/${user.username}/${dataset.name_dataset}`;
     const files = fs.readdirSync(dir);
     if (files.length === 0) {
       throw errFactory.createError(ErrorType.DATASET_EMPTY);
     }
-
+    let flag: boolean;
+    if (user.tokens >= dataset.cost) {
+      const transaction = await sequelize.transaction();
+      await user_obj.updateBalance(user.id_user, user.tokens - dataset.cost, transaction);
+      await transaction.commit();
+      flag = true;
+    } else {
+      flag = false
+    }
     const job = await inferenceQueue.add('inference', {
+      flag,
       user,
-      name_dataset,
+      dataset,
       model,
       cam_det,
       cam_cls
     }).catch(() => {
       throw errFactory.createError(ErrorType.ADD_QUEUE_FAILED);
     });
-
-    res.status(HttpStatusCode.OK).json({message: "Inference added to queue", jobId: job.id})
-
+    resFactory.send(res, undefined, {message: "Inference added to queue", jobId: job.id})
   } catch(error: any) {
     sendError.send(res, error.code, error.message);
   }
 }
 
 export async function getJob(req: any, res: any) {
-
   const jobId = req.body["jobId"];
   try {
     const job: Job | undefined = await inferenceQueue.getJob(jobId);
-    if (job) {
+    const { flag, user, dataset, model, cam_det, cam_cls } = job?.data;
+    if (!flag) {
+      resFactory.send(res, ResponseType.WORKER_ABORTED);
+    } else if (job) {
       if (await job.isCompleted()) {
-        const result = await job.returnvalue;
-        res.status(200).send({ status: 'COMPLETED', result });
+        resFactory.send(res, undefined, {status: 'COMPLETED', result: await job.returnvalue});
       } else if (await job.isFailed()) {
-        res.status(200).send({ status: 'FAILED', error: job.failedReason });
+        const transaction = await SequelizeDB.getConnection().transaction();
+        await user_obj.updateBalance(user.id_user, user.tokens, transaction);
+        await transaction.commit();
+        resFactory.send(res, ResponseType.WORKER_FAILED); 
+      } else if (await job.isActive()) {
+        resFactory.send(res, ResponseType.WORKER_RUNNING);
+      } else if (await job.isWaiting()) {
+        resFactory.send(res, ResponseType.WORKER_PENDING);
       } else {
-        res.status(200).send({ status: await job.getState() });
+        throw errFactory.createError(ErrorType.INTERNAL_ERROR);
       }
     } else {
       throw errFactory.createError(ErrorType.JOB_NOT_FOUND);
