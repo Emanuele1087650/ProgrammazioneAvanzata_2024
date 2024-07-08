@@ -10,6 +10,16 @@ import { Request } from "../models/request";
 import path from 'path';
 import { inferenceQueue } from '../queue/queue';
 import { Queue, Job } from 'bullmq';
+import { Readable } from 'stream'
+import * as fs from 'fs';
+import ffmpeg from 'fluent-ffmpeg';
+import AdmZip from 'adm-zip';
+import mime from 'mime-types';
+
+import unzipper from 'unzipper';
+
+const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+ffmpeg.setFfmpegPath(ffmpegPath);
 
 const sendResponse = new ResponseSender();
 const sendError = new ErrorSender();
@@ -80,24 +90,129 @@ export async function updateDataset(req: any, res: any) {
   }
 }
 
+
+async function extractAndVerifyZip(zipBuffer: any, dir: any) {
+  /*
+  // Converte il buffer in uno stream leggibile
+  const zipStream = Readable.from(zipBuffer);
+
+  const directory = await unzipper.Open.buffer(zipBuffer);
+
+  for (const file of directory.files) {
+    if (file.type === 'File') {
+      console.log(file)
+      const content = await file.buffer();
+      const filePath = path.join(dir, file.path);
+      //fs.writeFileSync(filePath, content);
+    }
+  }
+
+  //return;
+  */
+  
+
+  const zip = new AdmZip(zipBuffer);
+
+  // Estrai tutte le voci del ZIP
+  const zipEntries = zip.getEntries();
+
+  for (const zipEntry of zipEntries) {
+    if (zipEntry.isDirectory) {
+      // Se ci sono directory, lancia un errore
+      throw new Error('Il file ZIP non deve contenere directory.');
+    }
+
+    // Ottieni il tipo MIME del file
+    const mimetype = mime.lookup(zipEntry.entryName);
+
+    // Verifica che il tipo MIME sia un'immagine o un video
+    if (!mimetype || (!mimetype.startsWith('image/') && !(mimetype === 'video/mp4'))) {
+      throw new Error('Il file ZIP contiene file che non sono né immagini né video.');
+    }
+  }
+
+  for (const zipEntry of zipEntries) {
+    const mimetype = mime.lookup(zipEntry.entryName);
+    
+
+    // Ottieni il contenuto del file come buffer
+    const content = zipEntry.getData();
+    const name = zipEntry.name;
+
+    if (!mimetype || mimetype.startsWith('image/')) {
+      //console.log(zipEntry)
+    const filePath = path.join(dir, name);
+
+    // Scrivi il file nel file system
+    fs.writeFileSync(filePath, content);
+    }else if (!mimetype || mimetype === 'video/mp4') {
+      await extractFramesFromVideo(content, name, dir);
+  } else{
+    throw errFactory.createError(ErrorType.BAD_REQUEST);
+  }
+  }
+  return;
+}
+
+async function saveFile(fs: any, dir: any, file: any){
+
+  if(file.mimetype === 'video/mp4'){
+    await extractFramesFromVideo(file.buffer, file.originalname, dir);
+  } else if(file.mimetype === 'application/zip'){
+    await extractAndVerifyZip(file.buffer, dir);
+  } else {
+    const filePath = path.join(dir, file.originalname);
+    fs.writeFileSync(filePath, file.buffer);
+  }
+}
+
+async function extractFramesFromVideo(videoBuffer: any, videoName: any, dir: any) {
+    // Creiamo un Readable stream dal buffer
+    const videoStream = new Readable();
+    videoStream.push(videoBuffer);
+    videoStream.push(null);
+
+    // Estrai i frame dal video stream
+    ffmpeg(videoStream)
+        .fps(1)
+        .on('end', () => {
+            return;
+        })
+        .on('error', (err: Error) => {
+          throw errFactory.createError(ErrorType.INTERNAL_ERROR);
+        })
+        .save(`${dir}/${videoName}-%03d.png`); 
+    return;
+}
+
 export async function upload(req: any, res: any) {
 
+  var fs = require('fs');
+
   try{
-    var fs = require('fs');
-  
     const dataset_name = req.body.name;
     const file = req.files[0];
     const user = req.user;
-    
+
     const dataset = await dataset_obj.getDatasetByName(dataset_name, user);
 
     const dir = `/usr/app/Datasets/${user.username}/${dataset_name}`;
     if (!fs.existsSync(dir)) {
       throw errFactory.createError(ErrorType.NO_DATASET_NAME);
     }
-
-    const filePath = path.join(dir, file.originalname);
-    fs.writeFileSync(filePath, file.buffer);
+    
+    await saveFile(fs, dir, file);
+    
+    /*
+    if(file.mimetype === 'application/zip'){
+      const zipBuffer = file.buffer;
+      const files = await extractAndVerifyZip (zipBuffer);
+      for (const file_to_save of files){
+        await saveFile(fs, dir, file_to_save);
+      }
+    }else {await saveFile(fs, dir, file);}
+    */
+    
 
     const response = resFactory.createResponse(ResponseType.FILE_UPLOADED)
     sendResponse.send(res, response.code, response.message);

@@ -51,23 +51,25 @@ export function validateFile(req: any, res: any, next: any): void {
     if (!(req.files.length === 1)){
         const error = errFactory.createError(ErrorType.BAD_REQUEST);
         res.status(error.code).json({ message: error.message });
+        return;
     }
     const file = req.files[0];
     if(!(file.fieldname === 'dataset')){
         const error = errFactory.createError(ErrorType.BAD_REQUEST);
         res.status(error.code).json({ message: error.message });
+        return;
     }
     
     const mimetype = file.mimetype;
     const isImage = mimetype.startsWith('image/');
+    const isVideo = mimetype === 'video/mp4';
     const isZip = mimetype === 'application/zip';
 
-    if (!isImage && !isZip) {
+    if (!isImage && !isZip && !isVideo) {
         const error = errFactory.createError(ErrorType.INVALID_FORMAT);
         res.status(error.code).json({ message: error.message });
         return;
     }
-    
     next();
 }
 
