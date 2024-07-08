@@ -9,12 +9,14 @@ const errorHandler = new ErrorFactory();
 
 interface DatasetData {
   name_dataset: string;
+  cost?: number,
   id_creator: number;
   id_dataset?: number;
 }
 
 class Dataset extends Model implements DatasetData{
   public id_dataset!: number;
+  public cost!: number;
   public name_dataset!: string;
   public id_creator!: number;
 
@@ -90,6 +92,10 @@ Dataset.init({
     type: DataTypes.INTEGER,
     autoIncrement: true,
     primaryKey: true,
+  },
+  cost: {
+    type: DataTypes.REAL,
+    defaultValue: 0,
   },
   name_dataset: {
     type: DataTypes.TEXT,

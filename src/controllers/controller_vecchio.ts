@@ -1,9 +1,7 @@
-import { getAllUser, getUserByUsername } from "../models/users";
 import ErrorSender from "../utils/error_sender";
 import ResponseSender from "../utils/response_sender";
 import HttpStatusCode from "../utils/status_code"
 import { ResponseFactory, ResponseType } from "../factory/resFactory";
-import { createRequest, Request, updateRequest } from "../models/request";
 import { SequelizeDB } from "../singleton/sequelize";
 import { Dataset, getDatasetById, getDatasetsByUser, getAllDataset, createDataset, deleteDatasetByName, updateDatasetByName } from "../models/datasets_vecchio";
 import { ErrorFactory, ErrorType } from "../factory/errFactory";

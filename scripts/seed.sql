@@ -10,10 +10,11 @@ CREATE TABLE users (
     username TEXT UNIQUE NOT NULL,
     email TEXT UNIQUE NOT NULL,
     role user_role DEFAULT 'USER' NOT NULL,
-    tokens REAL DEFAULT 10 NOT NULL
+    tokens REAL DEFAULT 100 NOT NULL
 );
 CREATE TABLE dataset (
     id_dataset SERIAL PRIMARY KEY NOT NULL,
+    cost REAL NOT NULL,
     name_dataset TEXT NOT NULL,
     id_creator INTEGER REFERENCES users(id_user) NOT NULL
 );
@@ -32,9 +33,9 @@ INSERT INTO users (username, email, role) VALUES
 ('user2', 'user2@email.com', 'USER'),
 ('admin1', 'admin1@email.com', 'ADMIN');;
 
-INSERT INTO dataset (name_dataset, id_creator) VALUES
-('dataset1', 1),
-('dataset2', 1);;
+INSERT INTO dataset (cost, name_dataset, id_creator) VALUES
+(10, 'dataset1', 1),
+(10, 'dataset2', 1);;
 
 SET timezone = 'Europe/Rome';
 

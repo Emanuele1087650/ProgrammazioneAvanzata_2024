@@ -18,7 +18,6 @@ const errFactory = new ErrorFactory();
 const sequelize = SequelizeDB.getConnection();
 const dataset_obj = new Dataset();
 const user_obj = new User();
-const request_obj = new Request();
 
 export async function getAllDatasets(req: any, res: any) {
   try {
@@ -107,7 +106,8 @@ export async function upload(req: any, res: any) {
 }
 
 export async function addQueue(req: any, res: any) {
-  
+
+  const transaction = await SequelizeDB.getConnection().transaction();
   const name_dataset = req.body["dataset"];
   const model = req.body["model"];
   const cam_det = req.body["cam_det"];
@@ -124,9 +124,11 @@ export async function addQueue(req: any, res: any) {
       throw errFactory.createError(ErrorType.DATASET_EMPTY);
     }
 
+    const flag = (user.tokens >= dataset.cost) ? true : false;
     const job = await inferenceQueue.add('inference', {
+      flag,
       user,
-      name_dataset,
+      dataset,
       model,
       cam_det,
       cam_cls
@@ -134,6 +136,8 @@ export async function addQueue(req: any, res: any) {
       throw errFactory.createError(ErrorType.ADD_QUEUE_FAILED);
     });
 
+    await user_obj.updateBalance(user.id_user, user.tokens - dataset.cost, transaction);
+    await transaction.commit();
     res.status(HttpStatusCode.OK).json({message: "Inference added to queue", jobId: job.id})
 
   } catch(error: any) {
@@ -142,18 +146,29 @@ export async function addQueue(req: any, res: any) {
 }
 
 export async function getJob(req: any, res: any) {
-
+  const transaction = await SequelizeDB.getConnection().transaction();
   const jobId = req.body["jobId"];
   try {
     const job: Job | undefined = await inferenceQueue.getJob(jobId);
+    const { flag, user, dataset, model, cam_det, cam_cls } = job?.data;
+    if (!flag) {
+      const response = resFactory.createResponse(ResponseType.WORKER_ABORTED)
+      sendResponse.send(res, response.code, response.message);
+    }
     if (job) {
       if (await job.isCompleted()) {
-        const result = await job.returnvalue;
-        res.status(200).send({ status: 'COMPLETED', result });
+        sendResponse.send(res, HttpStatusCode.OK, {status: 'COMPLETED', result: await job.returnvalue});
       } else if (await job.isFailed()) {
-        res.status(200).send({ status: 'FAILED', error: job.failedReason });
-      } else {
-        res.status(200).send({ status: await job.getState() });
+        await user_obj.updateBalance(user.id_user, user.tokens, transaction);
+        await transaction.commit();
+        const response = resFactory.createResponse(ResponseType.WORKER_FAILED)
+        sendResponse.send(res, response.code, response.message);
+      } else if (await job.isActive()) {
+        const response = resFactory.createResponse(ResponseType.WORKER_RUNNING)
+        sendResponse.send(res, response.code, response.message);
+      } else if (await job.isWaiting()) {
+        const response = resFactory.createResponse(ResponseType.WORKER_PENDING)
+        sendResponse.send(res, response.code, response.message);
       }
     } else {
       throw errFactory.createError(ErrorType.JOB_NOT_FOUND);

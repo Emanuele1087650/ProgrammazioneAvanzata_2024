@@ -10,6 +10,7 @@ import cv2
 from YOLOv10_Explainer import yolov10_heatmap 
 from flask import Flask, jsonify, request, url_for
 import zipfile
+import urllib.parse
 
 app = Flask(__name__)
 
@@ -117,13 +118,13 @@ def inference():
         cv2.imwrite(f'{result_path}/detection.jpg', np_array_image2)
         
         labels_dict = {f"detection {i}": f"{names[i]} {labels[i]*100}%" for i, _ in enumerate(labels)}
-        labels_dict_cam = {f"cam {i}": url_for('static', filename=f'{result_path}/classificazione/eigen_cam{i}.jpg', _external=True) for i, _ in enumerate(labels_cam)}
+        labels_dict_cam = {f"cam {i}": f'http://127.0.0.1:8000/{urllib.parse.quote(result_path, safe='')}/classificazione/eigen_cam{i}.jpg' for i, _ in enumerate(labels_cam)}
         
         result_inference[f"results for image {image_name}"] = {
             "detection": num_detect,
             "result": labels_dict,
-            "url": url_for('static', filename=f'{result_path}/detection.jpg', _external=True),
-            "url_cam_detection": url_for('static', filename=f'{result_path}/cam_detection.jpg', _external=True) if cam_detection else None,
+            "url": f'http://127.0.0.1:8000/{urllib.parse.quote(result_path, safe='')}/detection.jpg',
+            "url_cam_detection": f'http://127.0.0.1:8000/{urllib.parse.quote(result_path, safe='')}/cam_detection.jpg' if cam_detection else None,
             "url_cam_classification": labels_dict_cam if cam_cls else None
         }
         

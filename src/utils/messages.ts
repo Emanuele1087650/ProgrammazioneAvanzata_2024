@@ -14,7 +14,10 @@ enum MESSAGES {
     BAD_REQUEST = "Error - Bad request",
     INTERNAL_ERROR = "Internal server error",
   
-
+    WORKER_FAILED = '{"status": "FAILED", "message": "Inference failed. The tokens have been reloaded"}',
+    WORKER_ABORTED = '{"status": "ABORTED", "message": "Insufficient balance"}',
+    WORKER_RUNNING = '{"status": "RUNNING", "message": "Inference running"}',
+    WORKER_PENDING = '{"status": "PENDING", "message": "Inference pending"}',
     UPLOAD_DATASET = "OK - Dataset loaded",
     DATASET_ALREADY_EXIST = "Bad Request - Dataset already exist",
     DATASET_EMPTY = "Bad Request - This dataset is empty",
@@ -22,6 +25,7 @@ enum MESSAGES {
     INFERENCE_ABORTED = "Bad Request - Inference aborted",
     ADD_QUEUE_FAILED = "Bad Request - Failed to added queue",
     JOB_NOT_FOUND = "Bad Request - Job nont found",
+    INSUFFICIENT_BALANCE = "Bad Request - Insufficient balance",
   
     // For users
     USER_NOT_FOUND = "User not found",

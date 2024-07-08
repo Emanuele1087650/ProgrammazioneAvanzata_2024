@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "concurrently -k \"nodemon -L src/index.ts\" \"npm run start-worker\"",
-    "start-worker": "ts-node src/queue/worker.ts"
+    "start-worker": "nodemon -L src/queue/worker.ts"
   },
   "keywords": [],
   "author": "",
