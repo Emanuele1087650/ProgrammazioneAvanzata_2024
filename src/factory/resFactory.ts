@@ -36,11 +36,11 @@ export class ResponseFactory {
 
     send(res: Response, type?: ResponseType, data?: Object | Messages): void {
         if(type !== undefined) {
-            const { code, message } = this.createResponse(type)
+            const { code, message } = this.createResponse(type);
             if (message instanceof String)
                 res.status(code).json({message: message});
             else
-            res.status(code).json(message);
+                res.status(code).json(message);
             return; 
         }
         res.status(HttpStatusCode.OK).json(data);

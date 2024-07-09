@@ -89,7 +89,7 @@ class ErrorFactory {
     };
 
     createError(type: ErrorType): CustomError {
-        const errorResponse = ErrorFactory.errorMap[type] || {code : 200, message: "ciao"}
+        const errorResponse = ErrorFactory.errorMap[type]
         return new CustomError(errorResponse.code, errorResponse.message)
     }
 

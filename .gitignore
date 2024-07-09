@@ -1,5 +1,6 @@
 /.env
 .DS_Store
 /node_modules
+/CV/static
 __pycache__
 *.txt

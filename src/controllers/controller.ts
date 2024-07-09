@@ -6,23 +6,20 @@ import { SequelizeDB } from "../singleton/sequelize";
 import { ErrorFactory, ErrorType } from "../factory/errFactory";
 import { Dataset } from '../models/dataset';
 import { User } from "../models/users";
-import { Request } from "../models/request";
 import path from 'path';
-import { inferenceQueue } from '../queue/queue';
+import { inferenceQueue } from '../queue/worker';
 import { Queue, Job } from 'bullmq';
 import { Readable, PassThrough, Writable } from 'stream'
 import * as fs from 'fs';
 import ffmpeg from 'fluent-ffmpeg';
 import AdmZip from 'adm-zip';
 import mime from 'mime-types';
-
 import unzipper from 'unzipper';
 import { Transaction } from "sequelize";
 
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 ffmpeg.setFfmpegPath(ffmpegPath);
 
-//const sendResponse = new ResponseSender();
 const sendError = new ErrorSender();
 const resFactory = new ResponseFactory();
 const errFactory = new ErrorFactory();
@@ -129,6 +126,7 @@ async function extractAndVerifyZip(zipBuffer: any, dir: any) {
 
   for (const zipEntry of zipEntries) {
     const mimetype = mime.lookup(zipEntry.entryName);
+    
     
     // Ottieni il contenuto del file come buffer
     const content = zipEntry.getData();
@@ -253,12 +251,10 @@ export async function upload(req: any, res: any) {
 }
 
 export async function addQueue(req: any, res: any) {
-
   const name_dataset = req.body["dataset"];
   const model = req.body["model"];
   const cam_det = req.body["cam_det"];
   const cam_cls = req.body["cam_cls"]; 
-  
   try {
     const user = req.user;
     const dataset = await dataset_obj.getDatasetByName(name_dataset, user);
@@ -297,11 +293,13 @@ export async function getJob(req: any, res: any) {
   const jobId = req.body["jobId"];
   try {
     const job: Job | undefined = await inferenceQueue.getJob(jobId);
+    if (job === undefined) {
+      throw errFactory.createError(ErrorType.JOB_NOT_FOUND);
+    }
     const { flag, user, dataset, model, cam_det, cam_cls } = job?.data;
     if (!flag) {
       resFactory.send(res, ResponseType.WORKER_ABORTED);
-    } else if (job) {
-      if (await job.isCompleted()) {
+    } else if (await job.isCompleted()) {
         resFactory.send(res, undefined, {status: 'COMPLETED', result: await job.returnvalue});
       } else if (await job.isFailed()) {
         const transaction = await SequelizeDB.getConnection().transaction();
@@ -315,9 +313,6 @@ export async function getJob(req: any, res: any) {
       } else {
         throw errFactory.createError(ErrorType.INTERNAL_ERROR);
       }
-    } else {
-      throw errFactory.createError(ErrorType.JOB_NOT_FOUND);
-    }
   } catch (error: any) {
     sendError.send(res, error.code, error.message);
   }
