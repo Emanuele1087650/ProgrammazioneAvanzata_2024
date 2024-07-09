@@ -71,7 +71,10 @@ router.post(
 );
 
 router.post(
-    "/token",
+    "/tokens",
+    async function (req: any, res: any) {
+        Controller.getTokens(req, res);
+    }
 );
 
 router.post(

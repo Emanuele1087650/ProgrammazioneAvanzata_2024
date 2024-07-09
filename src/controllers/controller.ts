@@ -335,3 +335,12 @@ export async function getResults(req: any, res: any) {
     sendError.send(res, error.code, error.message);
   }
 }
+
+export async function getTokens(req: any, res: any){
+  try{
+    const tokens = req.user.tokens;
+    resFactory.send(res, undefined, {tokens: tokens});
+  }catch(error: any){
+    sendError.send(res, error.code, error.message);
+  }
+}

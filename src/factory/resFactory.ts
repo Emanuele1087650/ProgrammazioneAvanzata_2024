@@ -15,7 +15,7 @@ export enum ResponseType {
     WORKER_FAILED,
     WORKER_ABORTED,
     WORKER_RUNNING,
-    WORKER_PENDING
+    WORKER_PENDING,
 }
 
 export class ResponseFactory {
@@ -27,7 +27,7 @@ export class ResponseFactory {
         [ResponseType.WORKER_FAILED]: { code: HttpStatusCode.BAD_REQUEST, message: JSON.parse(Messages.WORKER_FAILED) },
         [ResponseType.WORKER_ABORTED]: { code: HttpStatusCode.BAD_REQUEST, message: JSON.parse(Messages.WORKER_ABORTED) },
         [ResponseType.WORKER_RUNNING]: { code: HttpStatusCode.OK, message: JSON.parse(Messages.WORKER_RUNNING) },
-        [ResponseType.WORKER_PENDING]: { code: HttpStatusCode.OK, message: JSON.parse(Messages.WORKER_PENDING) }
+        [ResponseType.WORKER_PENDING]: { code: HttpStatusCode.OK, message: JSON.parse(Messages.WORKER_PENDING) },
     };
 
     createResponse(type: ResponseType): GoodResponse {
