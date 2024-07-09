@@ -6,22 +6,19 @@ import { SequelizeDB } from "../singleton/sequelize";
 import { ErrorFactory, ErrorType } from "../factory/errFactory";
 import { Dataset } from '../models/dataset';
 import { User } from "../models/users";
-import { Request } from "../models/request";
 import path from 'path';
-import { inferenceQueue } from '../queue/queue';
-import { Queue, Job } from 'bullmq';
+import { inferenceQueue } from '../queue/queue'; 
+import { Job } from 'bullmq';
 import { Readable } from 'stream'
 import * as fs from 'fs';
 import ffmpeg from 'fluent-ffmpeg';
 import AdmZip from 'adm-zip';
 import mime from 'mime-types';
-
 import unzipper from 'unzipper';
 
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 ffmpeg.setFfmpegPath(ffmpegPath);
 
-//const sendResponse = new ResponseSender();
 const sendError = new ErrorSender();
 const resFactory = new ResponseFactory();
 const errFactory = new ErrorFactory();
@@ -106,7 +103,6 @@ async function extractAndVerifyZip(zipBuffer: any, dir: any) {
   //return;
   */
   
-
   const zip = new AdmZip(zipBuffer);
 
   // Estrai tutte le voci del ZIP
@@ -130,7 +126,6 @@ async function extractAndVerifyZip(zipBuffer: any, dir: any) {
   for (const zipEntry of zipEntries) {
     const mimetype = mime.lookup(zipEntry.entryName);
     
-
     // Ottieni il contenuto del file come buffer
     const content = zipEntry.getData();
     const name = zipEntry.name;
@@ -142,7 +137,13 @@ async function extractAndVerifyZip(zipBuffer: any, dir: any) {
     // Scrivi il file nel file system
     fs.writeFileSync(filePath, content);
     }else if (!mimetype || mimetype === 'video/mp4') {
-      await extractFramesFromVideo(content, name, dir);
+      await extractFramesFromVideo(content, name, dir, (err, result) => {
+        if (err) {
+          console.error('Error extracting frames:', err);
+          return;
+        }
+        console.log('Frame Count:', result?.frameCount);
+      });
   } else{
     throw errFactory.createError(ErrorType.BAD_REQUEST);
   }
@@ -150,35 +151,33 @@ async function extractAndVerifyZip(zipBuffer: any, dir: any) {
   return;
 }
 
-async function saveFile(fs: any, dir: any, file: any){
-
-  if(file.mimetype === 'video/mp4'){
-    await extractFramesFromVideo(file.buffer, file.originalname, dir);
-  } else if(file.mimetype === 'application/zip'){
-    await extractAndVerifyZip(file.buffer, dir);
-  } else {
-    const filePath = path.join(dir, file.originalname);
-    fs.writeFileSync(filePath, file.buffer);
-  }
-}
-
-async function extractFramesFromVideo(videoBuffer: any, videoName: any, dir: any) {
-    // Creiamo un Readable stream dal buffer
+async function extractFramesFromVideo(videoBuffer: any, videoName: any, dir: any, callback: (err: null, result?: { frameCount: any }) => void) {
     const videoStream = new Readable();
     videoStream.push(videoBuffer);
     videoStream.push(null);
-
-    // Estrai i frame dal video stream
-    ffmpeg(videoStream)
-        .fps(1)
-        .on('end', () => {
-            return;
-        })
-        .on('error', (err: Error) => {
-          throw errFactory.createError(ErrorType.INTERNAL_ERROR);
-        })
-        .save(`${dir}/${videoName}-%03d.png`); 
-    return;
+    /*
+    const video = ffmpeg(videoStream)
+      .fps(1)
+      .on('progress', () => {
+        frameCount++;
+      })
+      .on('end', () => {
+          callback(null, {frameCount, video});
+      })
+      .on('error', () => {
+        throw errFactory.createError(ErrorType.INTERNAL_ERROR);
+      })
+      .run()
+    */
+    const ffmpegInput = ffmpeg();
+    ffmpegInput.input(videoStream);
+    ffmpegInput.ffprobe((err, data) => {
+      if (err) {
+        console.log(err);
+      }
+      const frameCount = data.streams?.[0]?.nb_frames || 0;
+      callback(null, {frameCount});
+    });
 }
 
 export async function upload(req: any, res: any) {
@@ -197,18 +196,21 @@ export async function upload(req: any, res: any) {
       throw errFactory.createError(ErrorType.NO_DATASET_NAME);
     }
     
-    await saveFile(fs, dir, file);
-    
-    /*
-    if(file.mimetype === 'application/zip'){
-      const zipBuffer = file.buffer;
-      const files = await extractAndVerifyZip (zipBuffer);
-      for (const file_to_save of files){
-        await saveFile(fs, dir, file_to_save);
-      }
-    }else {await saveFile(fs, dir, file);}
-    */
-    
+    if(file.mimetype === 'video/mp4'){
+      await extractFramesFromVideo(file.buffer, file.originalname, dir, (err, result) => {
+        if (err) {
+          console.log('Error extracting frames:', err);
+          return;
+        } else {
+          console.log('Frame Count:', result?.frameCount);
+        }
+      });
+    } else if(file.mimetype === 'application/zip'){
+      await extractAndVerifyZip(file.buffer, dir);
+    } else {
+      const filePath = path.join(dir, file.originalname);
+      fs.writeFileSync(filePath, file.buffer);
+    }
 
     resFactory.send(res, ResponseType.FILE_UPLOADED);
   } catch(error: any) {
@@ -217,12 +219,10 @@ export async function upload(req: any, res: any) {
 }
 
 export async function addQueue(req: any, res: any) {
-
   const name_dataset = req.body["dataset"];
   const model = req.body["model"];
   const cam_det = req.body["cam_det"];
   const cam_cls = req.body["cam_cls"]; 
-  
   try {
     const user = req.user;
     const dataset = await dataset_obj.getDatasetByName(name_dataset, user);

@@ -12,6 +12,8 @@
   "license": "ISC",
   "dependencies": {
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
+    "@ffmpeg/core": "^0.12.6",
+    "@ffmpeg/ffmpeg": "^0.12.10",
     "adm-zip": "^0.5.14",
     "bull": "^4.15.0",
     "bullmq": "^5.8.3",
@@ -36,6 +38,7 @@
     "@types/jsonwebtoken": "^9.0.6",
     "@types/mime-types": "^2.1.4",
     "@types/multer": "^1.4.11",
+    "@types/streamifier": "^0.1.2",
     "@types/unzipper": "^0.10.9",
     "concurrently": "^8.2.2"
   }
