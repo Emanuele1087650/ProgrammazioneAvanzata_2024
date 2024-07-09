@@ -65,11 +65,10 @@ export async function verifyUser(req: any, res: any, next: any) {
 
 export async function checkAdmin(req: any, res: any, next: any) {
   try {
-    var admin = await user_obj.getUserByUsername(req.username);
-    if (!admin || admin.role != "ADMIN") {
+    if (!req.user || req.user.role != "ADMIN") {
       res.status(400).json({message: "User not authorized"});
+      return;
     }
-    req.admin = admin;
     next();
   } catch (error) {
     res.status(500).json({message: "Admin not found"});
