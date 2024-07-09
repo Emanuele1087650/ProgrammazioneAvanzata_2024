@@ -317,3 +317,21 @@ export async function getJob(req: any, res: any) {
     sendError.send(res, error.code, error.message);
   }
 }
+
+export async function getResults(req: any, res: any) {
+  const jobId = req.body["jobId"];
+  try {
+    const job: Job | undefined = await inferenceQueue.getJob(jobId);
+    if (job === undefined) {
+      throw errFactory.createError(ErrorType.JOB_NOT_FOUND);
+    }
+    const flag = job.data.flag;
+    if (await job.isCompleted() && flag) {
+      resFactory.send(res, undefined, {status: 'COMPLETED', result: await job.returnvalue});
+    } else {
+      throw errFactory.createError(ErrorType.NOT_COMPLETED_JOB);
+    }
+  } catch (error: any) {
+    sendError.send(res, error.code, error.message);
+  }
+}

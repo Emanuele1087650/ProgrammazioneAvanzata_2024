@@ -63,15 +63,15 @@ router.post(
 );
 
 router.post(
-    "/status"
+    "/results",
+    Middleware.JOB,
+    async function (req: any, res: any) {
+        Controller.getResults(req, res);
+    }
 );
 
 router.post(
-    "/results"
-);
-
-router.post(
-    "/token"
+    "/token",
 );
 
 router.post(

@@ -37,7 +37,8 @@ enum ErrorType {
     INFERENCE_ABORTED,
     ADD_QUEUE_FAILED,
     JOB_NOT_FOUND,
-    INSUFFICIENT_BALANCE
+    INSUFFICIENT_BALANCE,
+    NOT_COMPLETED_JOB,
 }
 
 class CustomError extends Error {
@@ -85,7 +86,8 @@ class ErrorFactory {
         [ErrorType.INFERENCE_ABORTED]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.INFERENCE_ABORTED },
         [ErrorType.ADD_QUEUE_FAILED]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.ADD_QUEUE_FAILED },
         [ErrorType.JOB_NOT_FOUND]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.JOB_NOT_FOUND },
-        [ErrorType.INSUFFICIENT_BALANCE]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.INSUFFICIENT_BALANCE }
+        [ErrorType.INSUFFICIENT_BALANCE]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.INSUFFICIENT_BALANCE },
+        [ErrorType.NOT_COMPLETED_JOB]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.NOT_COMPLETED_JOB }
     };
 
     createError(type: ErrorType): CustomError {

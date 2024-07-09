@@ -35,6 +35,7 @@ enum MESSAGES {
     DATASET_DELETION_FAILED = "Error during dataset deletion",
     DATASET_UPDATED = "Dataset updated succesfully",
     FILE_UPLOADED = "File uploaded succesfully",
+    NOT_COMPLETED_JOB = "Job is non completed or failed",
   
     // For requests
     REQUEST_ACCEPTED = "Request accepted",
