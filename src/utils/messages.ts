@@ -36,6 +36,7 @@ enum MESSAGES {
     DATASET_UPDATED = "Dataset updated succesfully",
     FILE_UPLOADED = "File uploaded succesfully",
     NOT_COMPLETED_JOB = "Job is non completed or failed",
+    RECHARGED = "User balance recharged succesfully",
   
     // For requests
     REQUEST_ACCEPTED = "Request accepted",

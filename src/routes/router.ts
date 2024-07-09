@@ -78,7 +78,12 @@ router.post(
 );
 
 router.post(
-    "/recharge"
+    "/recharge",
+    Middleware.ADMIN,
+    Middleware.RECHARGE,
+    async function (req: any, res: any) {
+        Controller.recharge(req, res);
+    }
 );
 
 export default router;

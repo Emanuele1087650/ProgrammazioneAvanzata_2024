@@ -344,3 +344,17 @@ export async function getTokens(req: any, res: any){
     sendError.send(res, error.code, error.message);
   }
 }
+
+export async function recharge(req: any, res: any){
+  const transaction = await sequelize.transaction();
+  try{
+    const user = await user_obj.getUserByUsername(req.body["user"]);
+    const tokens = req.body["tokens"];
+    await user_obj.updateBalance(user.id_user, user.tokens + tokens, transaction)
+    transaction.commit();
+    resFactory.send(res, ResponseType.RECHARGED);
+  }catch(error: any){
+    transaction.rollback();
+    sendError.send(res, error.code, error.message);
+  }
+}

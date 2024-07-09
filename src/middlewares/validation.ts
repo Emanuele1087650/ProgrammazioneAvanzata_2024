@@ -2,12 +2,31 @@ import { ErrorFactory, ErrorType } from "../factory/errFactory";
 
 const errFactory = new ErrorFactory();
 
-function validateKeys(dataset: any, requiredKeys: string[], res: any): boolean {
+function validateRequiredKeys(dataset: any, requiredKeys: string[], res: any): boolean {
     const datasetKeys = Object.keys(dataset);
     const hasAllRequiredKeys = requiredKeys.every(key => datasetKeys.includes(key));
     const hasExactKeys = datasetKeys.length === requiredKeys.length;
+    if (!hasAllRequiredKeys || !hasExactKeys) {
+        const error = errFactory.createError(ErrorType.INVALID_BODY);
+        res.status(error.code).json({ message: error.message });
+        return false;
+    }
+    return true;
+}
+
+function validateStringKeys(dataset: any, requiredKeys: string[], res: any): boolean {
     const areValuesValid = requiredKeys.every(key => typeof dataset[key] === 'string' && dataset[key].trim() !== '');
-    if (!hasAllRequiredKeys || !hasExactKeys || !areValuesValid) {
+    if (!areValuesValid) {
+        const error = errFactory.createError(ErrorType.INVALID_BODY);
+        res.status(error.code).json({ message: error.message });
+        return false;
+    }
+    return true;
+}
+
+function validateNumberKeys(dataset: any, requiredKeys: string[], res: any): boolean {
+    const areValuesValid = requiredKeys.every(key => typeof dataset[key] === 'number' && dataset[key] >= 0);
+    if (!areValuesValid) {
         const error = errFactory.createError(ErrorType.INVALID_BODY);
         res.status(error.code).json({ message: error.message });
         return false;
@@ -28,21 +47,21 @@ export function validateBody(req: any, res: any, next: any): void {
 
 export function validateDataset(req: any, res: any, next: any): void {
     const requiredKeys = ["name"];
-    if (validateKeys(req.body, requiredKeys, res)) {
+    if (validateStringKeys(req.body, requiredKeys, res) && validateRequiredKeys(req.body, requiredKeys, res)) {
         next();
     }
 }
 
 export function validateUpdate(req: any, res: any, next: any): void {
     const requiredKeys = ["name", "new_name"];
-    if (validateKeys(req.body, requiredKeys, res)) {
+    if (validateStringKeys(req.body, requiredKeys, res) && validateRequiredKeys(req.body, requiredKeys, res)) {
         next();
     }
 }
 
 export function validateInference(req: any, res: any, next: any): void {
     const requiredKeys = ["dataset", "model", "cam_det", "cam_cls"];
-    if (validateKeys(req.body, requiredKeys, res)) {
+    if (validateStringKeys(req.body, requiredKeys, res) && validateRequiredKeys(req.body, requiredKeys, res)) {
         next();
     }
 }
@@ -75,15 +94,18 @@ export function validateFile(req: any, res: any, next: any): void {
 
 export function validateJob(req: any, res: any, next: any): void {
     const requiredKeys = ["jobId"];
-    const dataset = req.body;
-    const datasetKeys = Object.keys(dataset);
-    const hasAllRequiredKeys = requiredKeys.every(key => datasetKeys.includes(key));
-    const hasExactKeys = datasetKeys.length === requiredKeys.length;
-    const areValuesValid = requiredKeys.every(key => typeof dataset[key] === 'number');
-    if (!hasAllRequiredKeys || !hasExactKeys || !areValuesValid) {
-        const error = errFactory.createError(ErrorType.INVALID_BODY);
-        res.status(error.code).json({ message: error.message });
-        return;
+    if (validateNumberKeys(req.body, requiredKeys, res) && validateRequiredKeys(req.body, requiredKeys, res)) {
+        next();
     }
-    next();
+}
+
+export function validateRecharge(req: any, res: any, next: any): void {
+    const requiredKeys = ["user", "tokens"];
+    const requiredStringKeys = ["user"];
+    const requiredNumberKeys = ["tokens"];
+    if (validateStringKeys(req.body, requiredStringKeys, res) 
+        && validateNumberKeys(req.body, requiredNumberKeys, res) 
+        && validateRequiredKeys(req.body, requiredKeys, res)) {
+        next();
+    }
 }

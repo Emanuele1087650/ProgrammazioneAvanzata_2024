@@ -9,6 +9,10 @@ export const AUTH = [
   Authorization.verifyUser
 ];
 
+export const ADMIN = [
+  Authorization.checkAdmin,
+];
+
 export const DATASET = [
   Validation.validateBody,
   Validation.validateDataset,
@@ -33,4 +37,8 @@ export const UPLOAD = [
 export const JOB = [
   Validation.validateBody,
   Validation.validateJob,
+];
+
+export const RECHARGE = [
+  Validation.validateRecharge,
 ];
