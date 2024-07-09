@@ -41,6 +41,14 @@ class Dataset extends Model implements DatasetData{
     return result;
   }
 
+  async updateCost(new_cost: any, transaction?: Transaction) {
+    const data = {cost: new_cost}
+    const result = await this.update(data, {
+    transaction
+    }).catch(()=>{throw errorHandler.createError(ErrorType.DATASET_DELETION_FAILED);});;
+    return result;
+  }
+
   async getDatasetByName(name: string, user: any) {
     const dataset = await Dataset.findAll({
       where: {

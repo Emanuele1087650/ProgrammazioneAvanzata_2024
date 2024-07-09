@@ -10,13 +10,14 @@ import { Request } from "../models/request";
 import path from 'path';
 import { inferenceQueue } from '../queue/queue';
 import { Queue, Job } from 'bullmq';
-import { Readable } from 'stream'
+import { Readable, PassThrough, Writable } from 'stream'
 import * as fs from 'fs';
 import ffmpeg from 'fluent-ffmpeg';
 import AdmZip from 'adm-zip';
 import mime from 'mime-types';
 
 import unzipper from 'unzipper';
+import { Transaction } from "sequelize";
 
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 ffmpeg.setFfmpegPath(ffmpegPath);
@@ -87,25 +88,39 @@ export async function updateDataset(req: any, res: any) {
 }
 
 
-async function extractAndVerifyZip(zipBuffer: any, dir: any) {
-  /*
-  // Converte il buffer in uno stream leggibile
-  const zipStream = Readable.from(zipBuffer);
+async function countAndVerifyZip(zipBuffer: any) {  
 
-  const directory = await unzipper.Open.buffer(zipBuffer);
+  const zip = new AdmZip(zipBuffer);
 
-  for (const file of directory.files) {
-    if (file.type === 'File') {
-      console.log(file)
-      const content = await file.buffer();
-      const filePath = path.join(dir, file.path);
-      //fs.writeFileSync(filePath, content);
+  // Estrai tutte le voci del ZIP
+  const zipEntries = zip.getEntries();
+  let img_count = 0;
+  let video_count = 0;
+
+  for (const zipEntry of zipEntries) {
+    if (zipEntry.isDirectory) {
+      // Se ci sono directory, lancia un errore
+      throw errFactory.createError(ErrorType.BAD_REQUEST);;
+    }
+
+    // Ottieni il tipo MIME del file
+    const mimetype = mime.lookup(zipEntry.entryName);
+    console.log(mimetype)
+
+    // Verifica che il tipo MIME sia un'immagine o un video
+    if (!mimetype || (mimetype.startsWith('image/'))){
+      img_count++; 
+    } else if(!mimetype || (mimetype === 'video/mp4')) {
+      const content = zipEntry.getData();
+      video_count += await countFrame(content);
+      }else {
+      throw errFactory.createError(ErrorType.BAD_REQUEST);
     }
   }
+  return {video_count, img_count};
+}
 
-  //return;
-  */
-  
+async function extractAndVerifyZip(zipBuffer: any, dir: any) {  
 
   const zip = new AdmZip(zipBuffer);
 
@@ -113,36 +128,18 @@ async function extractAndVerifyZip(zipBuffer: any, dir: any) {
   const zipEntries = zip.getEntries();
 
   for (const zipEntry of zipEntries) {
-    if (zipEntry.isDirectory) {
-      // Se ci sono directory, lancia un errore
-      throw new Error('Il file ZIP non deve contenere directory.');
-    }
-
-    // Ottieni il tipo MIME del file
-    const mimetype = mime.lookup(zipEntry.entryName);
-
-    // Verifica che il tipo MIME sia un'immagine o un video
-    if (!mimetype || (!mimetype.startsWith('image/') && !(mimetype === 'video/mp4'))) {
-      throw new Error('Il file ZIP contiene file che non sono né immagini né video.');
-    }
-  }
-
-  for (const zipEntry of zipEntries) {
     const mimetype = mime.lookup(zipEntry.entryName);
     
-
     // Ottieni il contenuto del file come buffer
     const content = zipEntry.getData();
     const name = zipEntry.name;
 
     if (!mimetype || mimetype.startsWith('image/')) {
-      //console.log(zipEntry)
-    const filePath = path.join(dir, name);
-
-    // Scrivi il file nel file system
-    fs.writeFileSync(filePath, content);
+      const filePath = path.join(dir, name);
+      fs.writeFileSync(filePath, content);
     }else if (!mimetype || mimetype === 'video/mp4') {
-      await extractFramesFromVideo(content, name, dir);
+      let command = await extractFramesFromVideo(content);
+      command.save(`${dir}/${name}-%03d.png`);
   } else{
     throw errFactory.createError(ErrorType.BAD_REQUEST);
   }
@@ -151,68 +148,107 @@ async function extractAndVerifyZip(zipBuffer: any, dir: any) {
 }
 
 async function saveFile(fs: any, dir: any, file: any){
-
-  if(file.mimetype === 'video/mp4'){
-    await extractFramesFromVideo(file.buffer, file.originalname, dir);
+    if(file.mimetype === 'video/mp4'){
+    let command = await extractFramesFromVideo(file.buffer);
+    command.save(`${dir}/${file.originalname}-%03d.png`);
   } else if(file.mimetype === 'application/zip'){
     await extractAndVerifyZip(file.buffer, dir);
-  } else {
+  } else if (file.mimetype.startsWith('image/')){
     const filePath = path.join(dir, file.originalname);
     fs.writeFileSync(filePath, file.buffer);
+  } else {
+    throw errFactory.createError(ErrorType.BAD_REQUEST);
   }
 }
 
-async function extractFramesFromVideo(videoBuffer: any, videoName: any, dir: any) {
-    // Creiamo un Readable stream dal buffer
-    const videoStream = new Readable();
-    videoStream.push(videoBuffer);
-    videoStream.push(null);
+async function countFrame (buffer: any){
+  let command = await extractFramesFromVideo(buffer);
+  let frame_count = 0
+  return new Promise<number>((resolve, reject) => {
+    command
+      .output('/dev/null')
+      .outputOptions('-f null')
+      .on('progress', function(progress: any) {
+        frame_count = progress.frames;
+      })
+      .on('end', () => {
+        resolve(frame_count);
+      })
+      .on('error', (err: any) => {
+        reject(err);
+      })
+      .run();
+  });
+}
 
-    // Estrai i frame dal video stream
-    ffmpeg(videoStream)
-        .fps(1)
-        .on('end', () => {
-            return;
-        })
-        .on('error', (err: Error) => {
-          throw errFactory.createError(ErrorType.INTERNAL_ERROR);
-        })
-        .save(`${dir}/${videoName}-%03d.png`); 
-    return;
+async function extractFramesFromVideo(videoBuffer: any) {
+  const videoStream = new Readable();
+  videoStream.push(videoBuffer);
+  videoStream.push(null);
+
+  const command = ffmpeg(videoStream)
+    .outputOptions('-vf', 'fps=1')
+  return command
 }
 
 export async function upload(req: any, res: any) {
-
   var fs = require('fs');
+  const transaction2 = await sequelize.transaction();
+  const transaction = await sequelize.transaction();
 
-  try{
-    const dataset_name = req.body.name;
-    const file = req.files[0];
-    const user = req.user;
+  try {
+      const dataset_name = req.body.name;
+      const file = req.files[0];
+      const user = req.user;
 
-    const dataset = await dataset_obj.getDatasetByName(dataset_name, user);
+      const dataset = await dataset_obj.getDatasetByName(dataset_name, user);
 
-    const dir = `/usr/app/Datasets/${user.username}/${dataset_name}`;
-    if (!fs.existsSync(dir)) {
-      throw errFactory.createError(ErrorType.NO_DATASET_NAME);
-    }
-    
-    await saveFile(fs, dir, file);
-    
-    /*
-    if(file.mimetype === 'application/zip'){
-      const zipBuffer = file.buffer;
-      const files = await extractAndVerifyZip (zipBuffer);
-      for (const file_to_save of files){
-        await saveFile(fs, dir, file_to_save);
+      const dir = `/usr/app/Datasets/${user.username}/${dataset_name}`;
+      if (!fs.existsSync(dir)) {
+          throw errFactory.createError(ErrorType.NO_DATASET_NAME);
       }
-    }else {await saveFile(fs, dir, file);}
-    */
-    
 
-    resFactory.send(res, ResponseType.FILE_UPLOADED);
-  } catch(error: any) {
-    sendError.send(res, error.code, error.message);
+      const count = {
+          img_count: 0,
+          frame_count: 0,
+          zip_img: 0,
+          zip_video: 0
+      };
+
+      if (file.mimetype === 'application/zip') {
+        const zipBuffer = file.buffer;
+        let {video_count, img_count} = await countAndVerifyZip(zipBuffer);
+        count.zip_video += video_count;
+        count.zip_img += img_count;
+      }
+      if (file.mimetype.startsWith('image/')) {
+          count.img_count += 1;
+      }
+      if (file.mimetype === 'video/mp4') {
+        count.frame_count += await countFrame(file.buffer);
+      }
+
+      let upload_price = (count.frame_count * 0.4) + (count.img_count * 0.65) + (count.zip_img * 0.7) + (count.zip_video * 0.7)
+      
+      if (upload_price > user.tokens){
+        throw errFactory.createError(ErrorType.INSUFFICIENT_BALANCE);
+      }
+
+      let inference_cost = ((count.frame_count + count.zip_video) * 1.5) + ((count.img_count + count.zip_img) * 2.75)
+
+      await user_obj.updateBalance(user.id_user, user.tokens - upload_price, transaction);
+
+      await dataset.updateCost(dataset.cost + inference_cost, transaction2);
+
+      await saveFile(fs, dir, file);
+      await transaction.commit();
+      await transaction2.commit();
+
+      resFactory.send(res, ResponseType.FILE_UPLOADED);
+  } catch (error: any) {
+      transaction.rollback();
+      transaction2.rollback();
+      sendError.send(res, error.code, error.message);
   }
 }
 
