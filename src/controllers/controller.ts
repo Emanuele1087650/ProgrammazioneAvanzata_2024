@@ -7,7 +7,7 @@ import { ErrorFactory, ErrorType } from "../factory/errFactory";
 import { Dataset } from '../models/dataset';
 import { User } from "../models/users";
 import path from 'path';
-import { inferenceQueue } from '../queue/queue'; 
+import { inferenceQueue } from '../queue/worker'; 
 import { Job } from 'bullmq';
 import { Readable } from 'stream'
 import * as fs from 'fs';
@@ -137,13 +137,7 @@ async function extractAndVerifyZip(zipBuffer: any, dir: any) {
     // Scrivi il file nel file system
     fs.writeFileSync(filePath, content);
     }else if (!mimetype || mimetype === 'video/mp4') {
-      await extractFramesFromVideo(content, name, dir, (err, result) => {
-        if (err) {
-          console.error('Error extracting frames:', err);
-          return;
-        }
-        console.log('Frame Count:', result?.frameCount);
-      });
+      //await extractFramesFromVideo(content, name, dir)
   } else{
     throw errFactory.createError(ErrorType.BAD_REQUEST);
   }
@@ -151,67 +145,62 @@ async function extractAndVerifyZip(zipBuffer: any, dir: any) {
   return;
 }
 
-async function extractFramesFromVideo(videoBuffer: any, videoName: any, dir: any, callback: (err: null, result?: { frameCount: any }) => void) {
+async function extractFramesFromVideo(videoBuffer: any, videoName: any, dir: any) {
     const videoStream = new Readable();
     videoStream.push(videoBuffer);
     videoStream.push(null);
-    /*
-    const video = ffmpeg(videoStream)
-      .fps(1)
-      .on('progress', () => {
-        frameCount++;
-      })
-      .on('end', () => {
-          callback(null, {frameCount, video});
-      })
-      .on('error', () => {
-        throw errFactory.createError(ErrorType.INTERNAL_ERROR);
-      })
-      .run()
-    */
-    const ffmpegInput = ffmpeg();
-    ffmpegInput.input(videoStream);
-    ffmpegInput.ffprobe((err, data) => {
-      if (err) {
-        console.log(err);
-      }
-      const frameCount = data.streams?.[0]?.nb_frames || 0;
-      callback(null, {frameCount});
-    });
+    const command = ffmpeg(videoStream)
+      .outputOptions('-vf', 'fps=1');
+    return command;
 }
 
 export async function upload(req: any, res: any) {
 
   var fs = require('fs');
-
   try{
     const dataset_name = req.body.name;
     const file = req.files[0];
     const user = req.user;
-
     const dataset = await dataset_obj.getDatasetByName(dataset_name, user);
-
     const dir = `/usr/app/Datasets/${user.username}/${dataset_name}`;
     if (!fs.existsSync(dir)) {
       throw errFactory.createError(ErrorType.NO_DATASET_NAME);
     }
-    
-    if(file.mimetype === 'video/mp4'){
-      await extractFramesFromVideo(file.buffer, file.originalname, dir, (err, result) => {
-        if (err) {
-          console.log('Error extracting frames:', err);
-          return;
-        } else {
-          console.log('Frame Count:', result?.frameCount);
-        }
-      });
-    } else if(file.mimetype === 'application/zip'){
-      await extractAndVerifyZip(file.buffer, dir);
-    } else {
-      const filePath = path.join(dir, file.originalname);
-      fs.writeFileSync(filePath, file.buffer);
+    const count = {
+      img_count: 0,
+      frame_count: 0,
+      zip_count: 0
     }
 
+    if(file.mimetype === 'application/zip'){
+      const zipBuffer = file.buffer;
+    }
+
+    if(file.mimetype.startsWith('image/')){
+      count.img_count +=1;
+    }
+    if(file.mimetype === 'video/mp4') {
+      let command = await extractFramesFromVideo(file.buffer, file.originalname, dir);
+      let frameCount = 0;
+      await new Promise<{frameCount: number, command: any}>((resolve, reject) => {
+        command
+          .output('/dev/null')
+          .outputOptions('-f null')
+          .on('progress', function(progress: any) {
+            console.log("Progress update");
+            frameCount = progress.frames;
+            console.log(frameCount);
+          })
+          .on('end', () => {
+            resolve({frameCount, command});
+          })
+          .on('error', (err: any) => {
+            reject(err);
+          })
+          .run();
+      });
+      console.log("AOAOAOAOAOAOAOAO", frameCount)
+    }
     resFactory.send(res, ResponseType.FILE_UPLOADED);
   } catch(error: any) {
     sendError.send(res, error.code, error.message);
@@ -261,11 +250,13 @@ export async function getJob(req: any, res: any) {
   const jobId = req.body["jobId"];
   try {
     const job: Job | undefined = await inferenceQueue.getJob(jobId);
+    if (job === undefined) {
+      throw errFactory.createError(ErrorType.JOB_NOT_FOUND);
+    }
     const { flag, user, dataset, model, cam_det, cam_cls } = job?.data;
     if (!flag) {
       resFactory.send(res, ResponseType.WORKER_ABORTED);
-    } else if (job) {
-      if (await job.isCompleted()) {
+    } else if (await job.isCompleted()) {
         resFactory.send(res, undefined, {status: 'COMPLETED', result: await job.returnvalue});
       } else if (await job.isFailed()) {
         const transaction = await SequelizeDB.getConnection().transaction();
@@ -279,9 +270,6 @@ export async function getJob(req: any, res: any) {
       } else {
         throw errFactory.createError(ErrorType.INTERNAL_ERROR);
       }
-    } else {
-      throw errFactory.createError(ErrorType.JOB_NOT_FOUND);
-    }
   } catch (error: any) {
     sendError.send(res, error.code, error.message);
   }
