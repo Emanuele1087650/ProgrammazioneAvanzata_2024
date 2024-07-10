@@ -4,8 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "concurrently -k \"nodemon -L src/index.ts\" \"npm run start-worker\"",
-    "start-worker": "nodemon -L src/queue/worker.ts"
+    "start": "nodemon -L src/index.ts"
   },
   "keywords": [],
   "author": "",

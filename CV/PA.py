@@ -43,8 +43,6 @@ def inference():
         
     model_cls = YOLO(MODEL_CLS_PATH)
     
-    k=0
-    
     for image in images:
         
         labels_dict = {}
@@ -142,8 +140,6 @@ def inference():
             "url_cam_detection": f'http://127.0.0.1:8000/{urllib.parse.quote(result_path, safe='')}/cam_detection.jpg' if 'cam_detection.jpg' in os.listdir(result_path) else None,
             "url_cam_classification": labels_dict_cam if cam_cls else None
         })
-        print("AOAOAOAOAOAOAOAOAOAOAOAOOAOAOAOAoAOAOAOAOAOAOAOAOAAOAOAOAOAOAOAOOAOAOA", k)
-        k+=1
         
     return json.dumps(result_inference)
         
