@@ -85,7 +85,7 @@ export async function updateDataset(req: any, res: any) {
   }
 }
 
-async function createUniqueName(originalName: any){
+async function createUniqueName(originalName: any) {
   const baseName = originalName.replace(/\.[^/.]+$/, "");
   const timestamp = Date.now();
   return `${baseName}-${timestamp}`;
@@ -312,7 +312,7 @@ export async function getJob(req: any, res: any) {
     if (!flag) {
       resFactory.send(res, ResponseType.WORKER_ABORTED);
     } else if (await job.isCompleted()) {
-        resFactory.send(res, undefined, {status: 'COMPLETED', result: await job.returnvalue});
+        resFactory.send(res, undefined, {status: 'COMPLETED', results: await job.returnvalue});
       } else if (await job.isFailed()) {
         resFactory.send(res, ResponseType.WORKER_FAILED); 
       } else if (await job.isActive()) {

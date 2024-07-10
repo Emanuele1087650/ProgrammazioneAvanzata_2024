@@ -127,7 +127,7 @@ def inference():
         for i, _ in enumerate(labels):
             labels_dict.append({
                 "class": names[i], 
-                "probs": labels[i]*100,
+                "prob": labels[i]*100,
             })
         
         for i, _ in enumerate(labels_cam):
@@ -141,7 +141,7 @@ def inference():
         result_inference.append({
             "image_name": image_name,
             "num_detection": num_detect,
-            "result": labels_dict,
+            "results": labels_dict,
             "url": f'http://127.0.0.1:8000/{urllib.parse.quote(result_path, safe='')}/detection.jpg' if num_detect > 0 else [],
             "url_cam_detection": url_cam_detection if cam_detection else None,
             "url_cam_classification": labels_dict_cam if cam_cls else None

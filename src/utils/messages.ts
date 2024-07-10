@@ -1,61 +1,50 @@
 enum MESSAGES {
 
-    NO_AUTH_HEADER = "Bad Request - Authorization header missing",
-    NO_PAYLOAD_HEADER = "Bad Request - Invalid payload header",
-    NO_HEADER_BEARER = "Authorization header format is 'Bearer '<token>'",
-    MISSING_TOKEN = "Bad Request - JWT Token missing",
-    INVALID_TOKEN = "Forbidden - JWT Token invalid",
-    MALFORMED_PAYLOAD = "Bad Request - Payload malformed",
-    MISSING_BODY = "Empty request body",
-    INVALID_BODY = "invalid request body",
-    INVALID_FORMAT = "Bad request - Invalid file format",
-    NO_USER = "Bad Request - No users found",
-    UPDATE_COST_FAILED = "Bad Request - Update cost failed",
-  
-    ROUTE_NOT_FOUND = "Not Found - Route not found",
-    UNAUTHORIZED = "Error - Unauthorized",
-    BAD_REQUEST = "Error - Bad request",
-    INTERNAL_ERROR = "Internal server error",
-  
-    WORKER_FAILED = '{"status": "FAILED", "message": "Inference failed. The tokens have been reloaded"}',
-    WORKER_ABORTED = '{"status": "ABORTED", "message": "Insufficient balance"}',
-    WORKER_RUNNING = '{"status": "RUNNING", "message": "Inference running"}',
-    WORKER_PENDING = '{"status": "PENDING", "message": "Inference pending"}',
-    UPLOAD_DATASET = "OK - Dataset loaded",
-    DATASET_ALREADY_EXIST = "Bad Request - Dataset already exist",
-    DATASET_EMPTY = "Bad Request - This dataset is empty",
-    INFERENCE_FAILED = "Bad Request - Inference failed",
-    INFERENCE_ABORTED = "Bad Request - Inference aborted",
-    ADD_QUEUE_FAILED = "Bad Request - Failed to added queue",
-    JOB_NOT_FOUND = "Bad Request - Job nont found",
-    INSUFFICIENT_BALANCE = "Bad Request - Insufficient balance",
-  
-    // For users
-    USER_NOT_FOUND = "User not found",
-    NO_DATASETS = "There are no datasets",
-    NO_DATASET_NAME = "There is no dataset with this name",
-    DATASET_DELETED = "Dataset deleted succesfully",
-    DATASET_DELETION_FAILED = "Error during dataset deletion",
-    DATASET_UPDATED = "Dataset updated succesfully",
-    FILE_UPLOADED = "File uploaded succesfully",
-    NOT_COMPLETED_JOB = "Job is non completed or failed",
-    RECHARGED = "User balance recharged succesfully",
-  
-    // For requests
-    REQUEST_ACCEPTED = "Request accepted",
-    REQUESTS_DENIED = "Requests accepted/denied",
-    PENDING_REQUEST = "Request pending for acceptance/denial",
-    REQUEST_CREATION_ERROR = "Error - Could not create the request",
-    REQUEST_NOT_FOUND = "Request not found or already accepted/denied",
-    NO_PENDING_REQUEST = "No pending request",
-  
-    // For admin
-    ADMIN_NOT_FOUND = "Admin not found",
-    INVALID_IMPORT = "Invalid import, it must be > 0",
-    TOKENS_RECHARGED = "Tokens successfully recharged",
-    RECHARGE_FAIL = "Error - Could not recharge tokens",
+  NO_AUTH_HEADER = "The Authorization header is missing. Please include a valid Authorization header in your request.",
+  NO_PAYLOAD_HEADER = "The payload header is invalid. Ensure that the payload header is correctly formatted.",
+  NO_HEADER_BEARER = "The Authorization header format should be 'Bearer <token>'. Please check and correct the format.",
+  MISSING_TOKEN = "The JWT Token is missing. Please provide a valid JWT Token.",
+  INVALID_TOKEN = "The JWT Token provided is invalid. Please check the token and try again.",
+  MALFORMED_PAYLOAD = "The payload is malformed. Ensure the payload structure is correct and complete.",
+  MISSING_BODY = "The request body is empty. Please include the necessary data in the request body.",
+  INVALID_BODY = "The request body is invalid. Verify the body content and format.",
+  INVALID_FORMAT = "The file format is invalid. Please use a supported file format.",
+  NO_USER = "No users were found. Ensure that there are users in the system.",
+  UPDATE_COST_FAILED = "Failed to update the cost. Please check the inputs and try again.",
 
-  }
+  ROUTE_NOT_FOUND = "The requested route was not found. Please check the URL and try again.",
+  UNAUTHORIZED = "You are not authorized to access this resource. Please check your credentials.",
+  BAD_REQUEST = "The request is malformed or invalid. Please check the request parameters and try again.",
+  INTERNAL_ERROR = "An internal server error occurred. Please try again later.",
+
+  WORKER_FAILED = '{"status": "FAILED", "message": "Inference failed. The tokens have been reloaded. Please try again."}',
+  WORKER_ABORTED = '{"status": "ABORTED", "message": "Inference aborted due to insufficient balance. Please recharge your balance."}',
+  WORKER_RUNNING = '{"status": "RUNNING", "message": "Inference is currently running. Please wait for completion."}',
+  WORKER_PENDING = '{"status": "PENDING", "message": "Inference is pending. It will start shortly."}',
+  UPLOAD_DATASET = "The dataset has been successfully uploaded.",
+  DATASET_ALREADY_EXIST = "The dataset already exists. Please check the dataset name.",
+  DATASET_EMPTY = "The dataset is empty. Please upload a dataset with data.",
+  INFERENCE_FAILED = "The inference process failed. Please check the input data and try again.",
+  INFERENCE_ABORTED = "The inference process was aborted. Please try again.",
+  ADD_QUEUE_FAILED = "Failed to add to the queue. Please check the queue settings and try again.",
+  JOB_NOT_FOUND = "The specified job was not found. Please verify the job ID and try again.",
+  INSUFFICIENT_BALANCE = "You have insufficient balance to complete this operation. Please recharge your balance.",
+
+  USER_NOT_FOUND = "The specified user was not found. Please verify the user details and try again.",
+  NO_DATASETS = "No datasets are available. Please upload a dataset to continue.",
+  NO_DATASET_NAME = "No dataset found with the specified name. Please check the dataset name and try again.",
+  DATASET_DELETED = "The dataset has been successfully deleted.",
+  DATASET_DELETION_FAILED = "An error occurred during dataset deletion. Please try again.",
+  DATASET_UPDATED = "The dataset has been successfully updated.",
+  FILE_UPLOADED = "The file has been successfully uploaded.",
+  NOT_COMPLETED_JOB = "The job is not completed or has failed. Please check the job status.",
+  RECHARGED = "User balance has been successfully recharged.",
   
-  export default MESSAGES;
+  ADMIN_NOT_FOUND = "The specified admin was not found. Please verify the admin details and try again.",
+  INVALID_IMPORT = "The import value is invalid. It must be greater than 0. Please correct and try again.",
+  TOKENS_RECHARGED = "Tokens have been successfully recharged.",
+  RECHARGE_FAIL = "Failed to recharge tokens. Please try again later.",
+}
+  
+export default MESSAGES;
   
