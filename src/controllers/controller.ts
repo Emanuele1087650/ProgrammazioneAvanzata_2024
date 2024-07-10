@@ -84,6 +84,13 @@ export async function updateDataset(req: any, res: any) {
   }
 }
 
+async function createUniqueName(originalName: any){
+  const baseName = originalName.replace(/\.[^/.]+$/, "");
+  //const uuid = uuidv4();
+  const timestamp = Date.now();
+  return `${baseName}-${timestamp}`;
+  //return `${baseName}-${uuid}`;
+}
 
 async function countAndVerifyZip(zipBuffer: any) {  
 
@@ -127,17 +134,18 @@ async function extractAndVerifyZip(zipBuffer: any, dir: any) {
   for (const zipEntry of zipEntries) {
     const mimetype = mime.lookup(zipEntry.entryName);
     
-    
     // Ottieni il contenuto del file come buffer
     const content = zipEntry.getData();
     const name = zipEntry.name;
 
     if (!mimetype || mimetype.startsWith('image/')) {
-      const filePath = path.join(dir, name);
+      const fileName = await createUniqueName(name);
+      const filePath = path.join(dir, `${fileName}.jpg`);
       fs.writeFileSync(filePath, content);
     }else if (!mimetype || mimetype === 'video/mp4') {
+      const fileName = await createUniqueName(name);
       let command = await extractFramesFromVideo(content);
-      command.save(`${dir}/${name}-%03d.png`);
+      command.save(`${dir}/${fileName}-%03d.png`);
   } else{
     throw errFactory.createError(ErrorType.BAD_REQUEST);
   }
@@ -146,13 +154,15 @@ async function extractAndVerifyZip(zipBuffer: any, dir: any) {
 }
 
 async function saveFile(fs: any, dir: any, file: any){
-    if(file.mimetype === 'video/mp4'){
+  if(file.mimetype === 'video/mp4'){
+    const fileName = await createUniqueName(file.originalname);
     let command = await extractFramesFromVideo(file.buffer);
-    command.save(`${dir}/${file.originalname}-%03d.png`);
+    command.save(`${dir}/${fileName}-%03d.png`);
   } else if(file.mimetype === 'application/zip'){
     await extractAndVerifyZip(file.buffer, dir);
   } else if (file.mimetype.startsWith('image/')){
-    const filePath = path.join(dir, file.originalname);
+    const fileName = await createUniqueName(file.originalname);
+    const filePath = path.join(dir, `${fileName}.jpg`);
     fs.writeFileSync(filePath, file.buffer);
   } else {
     throw errFactory.createError(ErrorType.BAD_REQUEST);
@@ -183,10 +193,9 @@ async function extractFramesFromVideo(videoBuffer: any) {
   const videoStream = new Readable();
   videoStream.push(videoBuffer);
   videoStream.push(null);
-
   const command = ffmpeg(videoStream)
     .outputOptions('-vf', 'fps=1')
-  return command
+  return command;
 }
 
 export async function upload(req: any, res: any) {
@@ -196,7 +205,7 @@ export async function upload(req: any, res: any) {
 
   try {
       const dataset_name = req.body.name;
-      const file = req.files[0];
+      const files = req.files;
       const user = req.user;
 
       const dataset = await dataset_obj.getDatasetByName(dataset_name, user);
@@ -213,17 +222,19 @@ export async function upload(req: any, res: any) {
           zip_video: 0
       };
 
-      if (file.mimetype === 'application/zip') {
-        const zipBuffer = file.buffer;
-        let {video_count, img_count} = await countAndVerifyZip(zipBuffer);
-        count.zip_video += video_count;
-        count.zip_img += img_count;
-      }
-      if (file.mimetype.startsWith('image/')) {
-          count.img_count += 1;
-      }
-      if (file.mimetype === 'video/mp4') {
-        count.frame_count += await countFrame(file.buffer);
+      for (let file of files){
+        if (file.mimetype === 'application/zip') {
+          const zipBuffer = file.buffer;
+          let {video_count, img_count} = await countAndVerifyZip(zipBuffer);
+          count.zip_video += video_count;
+          count.zip_img += img_count;
+        }
+        if (file.mimetype.startsWith('image/')) {
+            count.img_count += 1;
+        }
+        if (file.mimetype === 'video/mp4') {
+          count.frame_count += await countFrame(file.buffer);
+        }
       }
 
       let upload_price = (count.frame_count * 0.4) + (count.img_count * 0.65) + (count.zip_img * 0.7) + (count.zip_video * 0.7)
@@ -238,7 +249,9 @@ export async function upload(req: any, res: any) {
 
       await dataset.updateCost(dataset.cost + inference_cost, transaction2);
 
-      await saveFile(fs, dir, file);
+      for (let file of files){
+        await saveFile(fs, dir, file);
+      }
       await transaction.commit();
       await transaction2.commit();
 
