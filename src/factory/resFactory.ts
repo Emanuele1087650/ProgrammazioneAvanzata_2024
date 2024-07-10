@@ -25,20 +25,20 @@ export class ResponseFactory {
         [ResponseType.DATASET_DELETED]: { code: HttpStatusCode.OK, message: Messages.DATASET_DELETED },
         [ResponseType.DATASET_UPDATED]: { code: HttpStatusCode.OK, message: Messages.DATASET_UPDATED },
         [ResponseType.FILE_UPLOADED]: { code: HttpStatusCode.OK, message: Messages.FILE_UPLOADED },
-        [ResponseType.WORKER_FAILED]: { code: HttpStatusCode.BAD_REQUEST, message: JSON.parse(Messages.WORKER_FAILED) },
-        [ResponseType.WORKER_ABORTED]: { code: HttpStatusCode.BAD_REQUEST, message: JSON.parse(Messages.WORKER_ABORTED) },
+        [ResponseType.WORKER_FAILED]: { code: HttpStatusCode.OK, message: JSON.parse(Messages.WORKER_FAILED) },
+        [ResponseType.WORKER_ABORTED]: { code: HttpStatusCode.OK, message: JSON.parse(Messages.WORKER_ABORTED) },
         [ResponseType.WORKER_RUNNING]: { code: HttpStatusCode.OK, message: JSON.parse(Messages.WORKER_RUNNING) },
         [ResponseType.WORKER_PENDING]: { code: HttpStatusCode.OK, message: JSON.parse(Messages.WORKER_PENDING) },
         [ResponseType.RECHARGED]: { code: HttpStatusCode.OK, message: Messages.RECHARGED },
     };
 
-    createResponse(type: ResponseType): GoodResponse {
+    getResponse(type: ResponseType): GoodResponse {
         return this.responseMap[type];
     }
 
     send(res: Response, type?: ResponseType, data?: Object | Messages): void {
         if(type !== undefined) {
-            const { code, message } = this.createResponse(type);
+            const { code, message } = this.getResponse(type);
             if (message instanceof String)
                 res.status(code).json({message: message});
             else

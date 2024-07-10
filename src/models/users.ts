@@ -1,4 +1,4 @@
-import { Sequelize, DataTypes, Model, Transaction } from 'sequelize';
+import { DataTypes, Model, Transaction } from 'sequelize';
 import { SequelizeDB } from '../singleton/sequelize';
 import { ErrorFactory, ErrorType } from '../factory/errFactory';
 
@@ -19,69 +19,19 @@ class User extends Model implements UserData{
   public role!: 'ADMIN' | 'USER';
   public tokens!: number;
 
-  async createUser(data: any, transaction: Transaction) {
-    try {
-      const result = await User.create(data, { transaction });
-      return result;
-    } catch (error) {
-      await transaction.rollback();
+  async getBalance() {
+    return this.tokens
+  }
+
+  async updateBalance(new_balance: number, transaction: Transaction) {
+    const data = {tokens: new_balance}
+    await this.update(data, {
+      transaction
+    }).catch(() => {
       throw errorHandler.createError(ErrorType.INTERNAL_ERROR);
-    }
-  }
-
-  async getUserById(id_user: number) {
-    const user = await User.findByPk(id_user, {
-      raw: true,
     });
-    if (!user) {
-      throw new Error(`User with id ${id_user} not found`);
-    }
-    return user;
   }
-
-  async getUserByUsername(username: string) {
-    const user = await User.findOne({
-      where: { username },
-    });
-    if (!user) {
-      throw new Error(`User with username ${username} not found`);
-    }
-    return user;
-  }
-
-  async getAllUsers() {
-    const users = await User.findAll();
-    if (!users || users.length === 0) {
-      throw errorHandler.createError(ErrorType.INTERNAL_ERROR);
-    }
-    return users;
-  }
-
-  async getBalance(id_user: number) {
-    const user = await User.findByPk(id_user, {
-      raw: true,
-      attributes: ['tokens'],
-    });
-    if (!user) {
-      throw new Error(`User with id ${id_user} not found`);
-    }
-    return user.tokens;
-  }
-
-  async updateBalance(id_user: number, new_balance: number, transaction: Transaction) {
-    try {
-      const result = await User.update({ tokens: new_balance }, {
-        where: { id_user },
-        transaction
-      });
-      if (result[0] === 0) {
-        throw errorHandler.createError(ErrorType.BAD_REQUEST);
-      }
-    } catch (error) {
-      await transaction.rollback();
-      throw errorHandler.createError(ErrorType.INTERNAL_ERROR);
-    }
-  }
+  
 }
 
 User.init({
@@ -117,4 +67,38 @@ User.init({
   freezeTableName: true,
 });
 
-export { User };
+async function getUserById(id_user: number) {
+  const user = await User.findByPk(id_user, {
+    raw: true,
+  }).catch(() => {
+    throw errorHandler.createError(ErrorType.INTERNAL_ERROR);
+  });
+  if (!user) {
+    throw errorHandler.createError(ErrorType.USER_NOT_FOUND);
+  }
+  return user;
+}
+
+async function getUserByUsername(username: string) {
+  const user = await User.findOne({
+    where: { username },
+  }).catch(() => {
+    throw errorHandler.createError(ErrorType.INTERNAL_ERROR);
+  });
+  if (!user) {
+    throw errorHandler.createError(ErrorType.USER_NOT_FOUND);
+  }
+  return user;
+}
+
+async function getAllUsers() {
+  const users = await User.findAll().catch(() => {
+    throw errorHandler.createError(ErrorType.INTERNAL_ERROR);
+  });
+  if (!users || users.length === 0) {
+    throw errorHandler.createError(ErrorType.NO_USER);
+  }
+  return users;
+}
+
+export { User, getUserById, getUserByUsername, getAllUsers };

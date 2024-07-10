@@ -4,10 +4,10 @@ import { SequelizeDB } from "./singleton/sequelize";
 import * as Middleware from "./middlewares/middleware";
 import router from "./routes/router";
 import ErrorSender from "./utils/error_sender";
-import HttpStatusCode from "./utils/status_code";
-import Messages from "./utils/messages";
+import { ErrorFactory, ErrorType } from "./factory/errFactory";
 
 const sequelize = SequelizeDB.getConnection();
+const errFactory = new ErrorFactory();
 const sendError = new ErrorSender();
 
 const app = express();
@@ -16,8 +16,9 @@ const port = process.env.API_PORT;
 app.use(express.json()); 
 app.use(Middleware.AUTH)
 app.use(router);
-app.use("*", (req, res) => {
-  sendError.send(res, HttpStatusCode.BAD_REQUEST, Messages.ROUTE_NOT_FOUND);
+app.use("*", (_req, res) => {
+  const err = errFactory.createError(ErrorType.ROUTE_NOT_FOUND);
+  sendError.send(res, err);
 });
 
 app.listen(port, () => { 

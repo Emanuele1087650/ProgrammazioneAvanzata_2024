@@ -1,10 +1,13 @@
 import { Response } from 'express';
-import Messages from './messages';
 import HttpStatusCode from './status_code';
+import { CustomError } from '../factory/errFactory';
 
 class ErrorSender {
-  send(res: Response, status: HttpStatusCode, message: Messages): void {
-    res.status(status).json({message: message});
+  send(res: Response, err: CustomError | Error): void {
+    if (err instanceof CustomError)
+      res.status(err.code).json({message: err.message});
+    else 
+      res.status(HttpStatusCode.BAD_REQUEST).json({type:err.name, message: err.message});
     return;
   }
 }

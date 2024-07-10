@@ -1,77 +1,89 @@
 require("dotenv").config();
 import jwt from "jsonwebtoken";
-import { User } from "../models/users";
+import { getUserByUsername } from "../models/users";
+import { ErrorFactory, ErrorType } from "../factory/errFactory";
+import ErrorSender from "../utils/error_sender";
 
-const user_obj = new User();
+const errFactory = new ErrorFactory();
+const sendError = new ErrorSender();
 
 export function verifyHeader(req: any, res: any, next: any): void {
-  if (req.headers.authorization) next();
-  else {
-    res.status(401).json({message: "Authorization header is missing"});
+  try {
+    if (req.headers.authorization) 
+      next();
+    else
+      throw errFactory.createError(ErrorType.NO_AUTH_HEADER);
+  } catch (err: any) {
+    sendError.send(res, err);
   }
 }
 
 export function verifyToken(req: any, res: any, next: any): void {
-  const bearerHeader: string = req.headers.authorization;
-  const bearer = bearerHeader.split(" ");
-  if (bearer.length === 2 && bearer[0] === "Bearer") {
-    req.token = bearer[1];
-    next();
-  } else {
-    res.status(401).json({message: "Authorization header format is 'Bearer <token>'"});
+  try {
+    const bearerHeader: string = req.headers.authorization;
+    const bearer = bearerHeader.split(" ");
+    if (bearer.length === 2 && bearer[0] === "Bearer") {
+      req.token = bearer[1];
+      next();
+    } else
+      throw errFactory.createError(ErrorType.NO_HEADER_BEARER);
+  } catch (err: any) {
+    sendError.send(res, err);
   }
+  
 }
 
 export function verifyJWT(req: any, res: any, next: any): void {
   try {
     const jwtKey = process.env.JWT_KEY;
     if (!jwtKey) {
-      throw new Error("JWT_KEY is not defined");
+      throw errFactory.createError(ErrorType.MISSING_TOKEN);
     }
     const decoded = jwt.verify(req.token, jwtKey) as jwt.JwtPayload;
     if (decoded && typeof decoded !== "string" && decoded.username) {
-      req.username = decoded.username; // Aggiungi il nome utente alla richiesta
+      req.username = decoded.username;
       next();
     } else {
-      res.status(401).json({message: "Invalid token"});
+      throw errFactory.createError(ErrorType.INVALID_TOKEN);
     }
-  } catch (error) {
-    res.status(401).json({message: "Failed to authenticate token"});
+  } catch (err: any) {
+    sendError.send(res, err);
   }
 }
 
 export function verifyPayload(req: any, res: any, next: any): void {
   try {
     req.body = JSON.parse(JSON.stringify(req.body));
-    next();
-  } catch (error) {
-    res.status(400).json({message: "Invalid payload"});
+    if(req.body)
+      next();
+    else 
+      throw errFactory.createError(ErrorType.NO_PAYLOAD_HEADER);
+  } catch (err: any) {
+    sendError.send(res, err);
   }
 }
 
 export async function verifyUser(req: any, res: any, next: any) {
   try {
-    const user = await user_obj.getUserByUsername(req.username);
+    const user = await getUserByUsername(req.username);
     if (!user) {
-      res.status(404).json({message: "User not found"});
-      return;
+      throw errFactory.createError(ErrorType.NO_USER);
     }
     req.user = user; 
     next();
-  } catch (error) {
-    res.status(500).json({message: "Internal server error"});
+  } catch (err: any) {
+    sendError.send(res, err);
   }
 }
 
 export async function checkAdmin(req: any, res: any, next: any) {
   try {
     if (!req.user || req.user.role != "ADMIN") {
-      res.status(400).json({message: "User not authorized"});
-      return;
-    }
-    next();
-  } catch (error) {
-    res.status(500).json({message: "Admin not found"});
+      throw errFactory.createError(ErrorType.UNAUTHORIZED);
+    } else
+      next();
+  } catch (err: any) {
+    sendError.send(res, err);
   }
 }
 

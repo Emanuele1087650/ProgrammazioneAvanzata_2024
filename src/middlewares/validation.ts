@@ -1,6 +1,8 @@
 import { ErrorFactory, ErrorType } from "../factory/errFactory";
+import ErrorSender from "../utils/error_sender";
 
 const errFactory = new ErrorFactory();
+const sendError = new ErrorSender();
 
 function validateRequiredKeys(dataset: any, requiredKeys: string[], res: any): boolean {
     const datasetKeys = Object.keys(dataset);
@@ -8,7 +10,7 @@ function validateRequiredKeys(dataset: any, requiredKeys: string[], res: any): b
     const hasExactKeys = datasetKeys.length === requiredKeys.length;
     if (!hasAllRequiredKeys || !hasExactKeys) {
         const error = errFactory.createError(ErrorType.INVALID_BODY);
-        res.status(error.code).json({ message: error.message });
+        sendError.send(res, error);
         return false;
     }
     return true;
@@ -18,7 +20,7 @@ function validateStringKeys(dataset: any, requiredKeys: string[], res: any): boo
     const areValuesValid = requiredKeys.every(key => typeof dataset[key] === 'string' && dataset[key].trim() !== '');
     if (!areValuesValid) {
         const error = errFactory.createError(ErrorType.INVALID_BODY);
-        res.status(error.code).json({ message: error.message });
+        sendError.send(res, error);
         return false;
     }
     return true;
@@ -28,7 +30,7 @@ function validateNumberKeys(dataset: any, requiredKeys: string[], res: any): boo
     const areValuesValid = requiredKeys.every(key => typeof dataset[key] === 'number' && dataset[key] >= 0);
     if (!areValuesValid) {
         const error = errFactory.createError(ErrorType.INVALID_BODY);
-        res.status(error.code).json({ message: error.message });
+        sendError.send(res, error);
         return false;
     }
     return true;
@@ -39,7 +41,7 @@ export function validateBody(req: any, res: any, next: any): void {
     const datasetKeys = Object.keys(dataset);
     if (datasetKeys.length === 0) {
         const error = errFactory.createError(ErrorType.MISSING_BODY);
-        res.status(error.code).json({ message: error.message });
+        sendError.send(res, error);
         return;
     }
     next();
@@ -50,6 +52,7 @@ export function validateDataset(req: any, res: any, next: any): void {
     if (validateStringKeys(req.body, requiredKeys, res) && validateRequiredKeys(req.body, requiredKeys, res)) {
         next();
     }
+    return;
 }
 
 export function validateUpdate(req: any, res: any, next: any): void {
@@ -57,6 +60,7 @@ export function validateUpdate(req: any, res: any, next: any): void {
     if (validateStringKeys(req.body, requiredKeys, res) && validateRequiredKeys(req.body, requiredKeys, res)) {
         next();
     }
+    return;
 }
 
 export function validateInference(req: any, res: any, next: any): void {
@@ -64,13 +68,14 @@ export function validateInference(req: any, res: any, next: any): void {
     if (validateStringKeys(req.body, requiredKeys, res) && validateRequiredKeys(req.body, requiredKeys, res)) {
         next();
     }
+    return;
 }
 
 export function validateFile(req: any, res: any, next: any): void {
     for (let file of req.files){
         if(!(file.fieldname === 'dataset')){
             const error = errFactory.createError(ErrorType.BAD_REQUEST);
-            res.status(error.code).json({ message: error.message });
+            sendError.send(res, error);
             return;
         }
         
@@ -81,7 +86,7 @@ export function validateFile(req: any, res: any, next: any): void {
 
         if (!isImage && !isZip && !isVideo) {
             const error = errFactory.createError(ErrorType.INVALID_FORMAT);
-            res.status(error.code).json({ message: error.message });
+            sendError.send(res, error);
             return;
         }
     }
@@ -93,6 +98,7 @@ export function validateJob(req: any, res: any, next: any): void {
     if (validateNumberKeys(req.body, requiredKeys, res) && validateRequiredKeys(req.body, requiredKeys, res)) {
         next();
     }
+    return;
 }
 
 export function validateRecharge(req: any, res: any, next: any): void {
@@ -104,4 +110,5 @@ export function validateRecharge(req: any, res: any, next: any): void {
         && validateRequiredKeys(req.body, requiredKeys, res)) {
         next();
     }
+    return;
 }
