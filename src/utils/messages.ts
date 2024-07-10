@@ -1,13 +1,16 @@
 enum MESSAGES {
 
     NO_AUTH_HEADER = "Bad Request - Authorization header missing",
-    NO_PAYLOAD_HEADER = "Bad Request - JSON payload header missing",
+    NO_PAYLOAD_HEADER = "Bad Request - Invalid payload header",
+    NO_HEADER_BEARER = "Authorization header format is 'Bearer '<token>'",
     MISSING_TOKEN = "Bad Request - JWT Token missing",
     INVALID_TOKEN = "Forbidden - JWT Token invalid",
     MALFORMED_PAYLOAD = "Bad Request - Payload malformed",
     MISSING_BODY = "Empty request body",
     INVALID_BODY = "invalid request body",
     INVALID_FORMAT = "Bad request - Invalid file format",
+    NO_USER = "Bad Request - No users found",
+    UPDATE_COST_FAILED = "Bad Request - Update cost failed",
   
     ROUTE_NOT_FOUND = "Not Found - Route not found",
     UNAUTHORIZED = "Error - Unauthorized",

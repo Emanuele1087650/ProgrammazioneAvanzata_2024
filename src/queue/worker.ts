@@ -1,6 +1,7 @@
 import { Worker, Job, Queue } from 'bullmq';
 import { Redis, RedisOptions } from 'ioredis';
 import { ErrorFactory, ErrorType } from '../factory/errFactory';
+import { SequelizeDB } from '../singleton/sequelize';
 
 const errFactory = new ErrorFactory();
 const MAX_COMPLETED_JOBS_PER_USER = 50;
@@ -55,19 +56,26 @@ const inferenceWorker = new Worker('inferenceQueue', async (job: Job) => {
 export { inferenceQueue };
 
 inferenceWorker.on('completed', async (job) => {
-
-    const userId = job.data.user.id_user;
-    
-    const userJobCount = await redis.incr(`user:${userId}:completedJobCount`);
-    
-    if (userJobCount > MAX_COMPLETED_JOBS_PER_USER) {
-      // Trova il job completato più vecchio per questo utente
-      const userJobs = await inferenceQueue.getJobs(['completed'], 0, -1, true);
-      const oldestUserJob = userJobs.find(j => j.data.user.id_user === userId);
-      
-      if (oldestUserJob) {
-        await oldestUserJob.remove();
-        await redis.decr(`user:${userId}:completedJobCount`);
-      }
+  const userId = job.data.user.id_user;
+  
+  const userJobCount = await redis.incr(`user:${userId}:completedJobCount`);
+  
+  if (userJobCount > MAX_COMPLETED_JOBS_PER_USER) {
+    const userJobs = await inferenceQueue.getJobs(['completed'], 0, -1, true);
+    const oldestUserJob = userJobs.find(j => j.data.user.id_user === userId);
+    if (oldestUserJob) {
+      await oldestUserJob.remove();
+      await redis.decr(`user:${userId}:completedJobCount`);
     }
+  }
+});
+
+inferenceWorker.on('failed', async (job) => {
+  const transaction = await SequelizeDB.getConnection().transaction();
+  const user = job?.data.user;
+  const dataset = job?.data.dataset;
+  await user.updateBalance(user.tokens + dataset.cost, transaction).catch(async () => {
+    await transaction.rollback();
   });
+  await transaction.commit();
+});

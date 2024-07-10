@@ -23,9 +23,6 @@ enum ErrorType {
     NO_DATASETS,
     NO_DATASET_NAME,
     DATASET_DELETION_FAILED,
-    REQUEST_ACCEPTED,
-    REQUESTS_DENIED,
-    PENDING_REQUEST,
     REQUEST_NOT_FOUND,
     NO_PENDING_REQUEST,
     ADMIN_NOT_FOUND,
@@ -39,6 +36,9 @@ enum ErrorType {
     JOB_NOT_FOUND,
     INSUFFICIENT_BALANCE,
     NOT_COMPLETED_JOB,
+    NO_USER,
+    UPDATE_COST_FAILED,
+    NO_HEADER_BEARER,
 }
 
 class CustomError extends Error {
@@ -60,23 +60,16 @@ class ErrorFactory {
         [ErrorType.MISSING_BODY]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.MISSING_BODY },
         [ErrorType.INVALID_BODY]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.INVALID_BODY },
         [ErrorType.INVALID_FORMAT]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.INVALID_FORMAT },
-
         [ErrorType.ROUTE_NOT_FOUND]: { code: HttpStatusCode.NOT_FOUND, message: Messages.ROUTE_NOT_FOUND },
         [ErrorType.UNAUTHORIZED]: { code: HttpStatusCode.UNAUTHORIZED, message: Messages.UNAUTHORIZED },
         [ErrorType.BAD_REQUEST]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.BAD_REQUEST },
         [ErrorType.INTERNAL_ERROR]: { code: HttpStatusCode.INTERNAL_SERVER_ERROR, message: Messages.INTERNAL_ERROR },
-
         [ErrorType.USER_NOT_FOUND]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.USER_NOT_FOUND },
         [ErrorType.NO_DATASETS]: { code: HttpStatusCode.NOT_FOUND, message: Messages.NO_DATASETS },
         [ErrorType.NO_DATASET_NAME]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.NO_DATASET_NAME },
         [ErrorType.DATASET_DELETION_FAILED]: { code: HttpStatusCode.INTERNAL_SERVER_ERROR, message: Messages.DATASET_DELETION_FAILED },
-
-        [ErrorType.REQUEST_ACCEPTED]: { code: HttpStatusCode.OK, message: Messages.REQUEST_ACCEPTED },
-        [ErrorType.REQUESTS_DENIED]: { code: HttpStatusCode.OK, message: Messages.REQUESTS_DENIED },
-        [ErrorType.PENDING_REQUEST]: { code: HttpStatusCode.OK, message: Messages.PENDING_REQUEST },
         [ErrorType.REQUEST_NOT_FOUND]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.REQUEST_NOT_FOUND },
         [ErrorType.NO_PENDING_REQUEST]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.NO_PENDING_REQUEST },
-
         [ErrorType.ADMIN_NOT_FOUND]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.ADMIN_NOT_FOUND },
         [ErrorType.INVALID_IMPORT]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.INVALID_IMPORT },
         [ErrorType.RECHARGE_FAIL]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.RECHARGE_FAIL },
@@ -87,7 +80,10 @@ class ErrorFactory {
         [ErrorType.ADD_QUEUE_FAILED]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.ADD_QUEUE_FAILED },
         [ErrorType.JOB_NOT_FOUND]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.JOB_NOT_FOUND },
         [ErrorType.INSUFFICIENT_BALANCE]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.INSUFFICIENT_BALANCE },
-        [ErrorType.NOT_COMPLETED_JOB]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.NOT_COMPLETED_JOB }
+        [ErrorType.NOT_COMPLETED_JOB]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.NOT_COMPLETED_JOB },
+        [ErrorType.NO_USER]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.NO_USER },
+        [ErrorType.UPDATE_COST_FAILED]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.UPDATE_COST_FAILED },
+        [ErrorType.NO_HEADER_BEARER]: { code: HttpStatusCode.BAD_REQUEST, message: Messages.NO_HEADER_BEARER }
     };
 
     createError(type: ErrorType): CustomError {
