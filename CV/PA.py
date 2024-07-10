@@ -117,8 +117,9 @@ def inference():
             
             cv2.rectangle(np_array_image2, (int(x_min.item()), int(y_min.item())), (int(x_max.item()), int(y_max.item())), color=(0, 255, 0) if label == 1 else (255, 0, 0), thickness=2)
             cv2.putText(np_array_image2, f"{result2[0].names[label]} {round(result2[0].probs.data[label].item(), 2)}", (int(x_min.item()), int(y_min.item())-10), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 255, 0) if label == 1 else (255, 0, 0), 8)
-            
-        cv2.imwrite(f'{result_path}/detection.jpg', np_array_image2)
+
+        if num_detect > 0:  
+            cv2.imwrite(f'{result_path}/detection.jpg', np_array_image2)
         
         labels_dict = []
         url_cam_detection = []
@@ -141,7 +142,7 @@ def inference():
             "image_name": image_name,
             "num_detection": num_detect,
             "result": labels_dict,
-            "url": f'http://127.0.0.1:8000/{urllib.parse.quote(result_path, safe='')}/detection.jpg',
+            "url": f'http://127.0.0.1:8000/{urllib.parse.quote(result_path, safe='')}/detection.jpg' if num_detect > 0 else [],
             "url_cam_detection": url_cam_detection if cam_detection else None,
             "url_cam_classification": labels_dict_cam if cam_cls else None
         })
