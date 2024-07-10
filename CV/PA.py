@@ -43,6 +43,8 @@ def inference():
         
     model_cls = YOLO(MODEL_CLS_PATH)
     
+    k=0
+    
     for image in images:
         
         labels_dict = {}
@@ -65,7 +67,9 @@ def inference():
         num_detect = result[0].boxes.shape[0]
         
         if cam_detection:
-            detection_cam(dataset+image, model=MODEL_DET_PATH).save(f'{result_path}/cam_detection.jpg')
+            img = detection_cam(dataset+image, model=MODEL_DET_PATH)
+            if (img is not None):
+                img.save(f'{result_path}/cam_detection.jpg')
         
         image_pil = Image.open(dataset+image)
         bounding_boxes = result[0].boxes.xyxy
@@ -102,7 +106,6 @@ def inference():
 
             result2 = model_cls(img3, imgsz=512)
             
-            
             if cam_cls:
                 os.makedirs(classification_path, exist_ok=True)                
                 img_res = eigencam_cls(model_cls, img3)
@@ -136,36 +139,13 @@ def inference():
             "num_detection": num_detect,
             "result": labels_dict,
             "url": f'http://127.0.0.1:8000/{urllib.parse.quote(result_path, safe='')}/detection.jpg',
-            "url_cam_detection": f'http://127.0.0.1:8000/{urllib.parse.quote(result_path, safe='')}/cam_detection.jpg' if cam_detection else None,
+            "url_cam_detection": f'http://127.0.0.1:8000/{urllib.parse.quote(result_path, safe='')}/cam_detection.jpg' if 'cam_detection.jpg' in os.listdir(result_path) else None,
             "url_cam_classification": labels_dict_cam if cam_cls else None
         })
+        print("AOAOAOAOAOAOAOAOAOAOAOAOOAOAOAOAoAOAOAOAOAOAOAOAOAAOAOAOAOAOAOAOOAOAOA", k)
+        k+=1
         
     return json.dumps(result_inference)
-        
-@app.route("/uploadDataset/<string:user>", methods=['POST'])
-def uploadDataset(user):
-    dataset = request.files['dataset']
-    name = request.form.get("name")
-    save_path = f"Datasets/{user}/{name}"
-    os.makedirs(save_path, exist_ok=True)
-    try:
-        with zipfile.ZipFile(dataset, 'r') as zip_ref:
-            zip_ref.extractall(save_path)
-    except zipfile.BadZipFile:
-        return "err"
-    return "succ"
-
-@app.route("/uploadImage/<string:user>/<string:dataset>", methods=['POST'])
-def uploadImage(user, dataset):
-    image = request.files['image']
-    name_img = request.form.get("name_img")
-    save_path = f"Datasets/{user}/{dataset}"
-    os.makedirs(save_path, exist_ok=True)
-    try:
-        image.save(f"{save_path}/{name_img}.jpg")
-    except:
-        return "err"
-    return "succ"
         
 def detection_cam(img, model, conf_threshold=0.4, method="GradCAM", layer=[16]):  
     model = yolov10_heatmap(
