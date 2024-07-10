@@ -28,7 +28,7 @@ class Dataset extends Model {
   async deleteDataset(transaction: Transaction) {       
     await this.destroy({
        transaction 
-      }).catch(() => {
+    }).catch(() => {
       throw errorHandler.createError(ErrorType.DATASET_DELETION_FAILED);
     });
   }

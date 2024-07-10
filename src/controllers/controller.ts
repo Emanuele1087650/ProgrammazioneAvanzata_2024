@@ -11,6 +11,7 @@ import ffmpeg from 'fluent-ffmpeg';
 import AdmZip from 'adm-zip';
 import mime from 'mime-types';
 import * as fs from 'fs';
+import { User } from "../models/users";
 
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 ffmpeg.setFfmpegPath(ffmpegPath);
@@ -92,61 +93,50 @@ async function createUniqueName(originalName: any) {
 }
 
 async function countAndVerifyZip(zipBuffer: any) {  
-
   const zip = new AdmZip(zipBuffer);
-  // Estrai tutte le voci del ZIP
   const zipEntries = zip.getEntries();
   let img_count = 0;
   let video_count = 0;
 
   for (const zipEntry of zipEntries) {
     if (zipEntry.isDirectory) {
-      // Se ci sono directory, lancia un errore
-      throw errFactory.createError(ErrorType.BAD_REQUEST);;
+      throw errFactory.createError(ErrorType.BAD_REQUEST);
     }
 
-    // Ottieni il tipo MIME del file
     const mimetype = mime.lookup(zipEntry.entryName);
-    console.log(mimetype)
 
-    // Verifica che il tipo MIME sia un'immagine o un video
     if (!mimetype || (mimetype.startsWith('image/'))){
       img_count++; 
     } else if(!mimetype || (mimetype === 'video/mp4')) {
-      const content = zipEntry.getData();
-      video_count += await countFrame(content);
-      }else {
+      const buffer = zipEntry.getData();
+      video_count += await countFrame(buffer);
+    }else {
       throw errFactory.createError(ErrorType.BAD_REQUEST);
     }
   }
   return {video_count, img_count};
 }
 
-async function extractAndVerifyZip(zipBuffer: any, dir: any) {  
-
+async function extractZip(zipBuffer: any, dir: any) {  
   const zip = new AdmZip(zipBuffer);
-
-  // Estrai tutte le voci del ZIP
   const zipEntries = zip.getEntries();
 
   for (const zipEntry of zipEntries) {
     const mimetype = mime.lookup(zipEntry.entryName);
-    
-    // Ottieni il contenuto del file come buffer
-    const content = zipEntry.getData();
+
+    const buffer = zipEntry.getData();
     const name = zipEntry.name;
+    const fileName = await createUniqueName(name);
 
     if (!mimetype || mimetype.startsWith('image/')) {
-      const fileName = await createUniqueName(name);
       const filePath = path.join(dir, `${fileName}.jpg`);
-      fs.writeFileSync(filePath, content);
+      fs.writeFileSync(filePath, buffer);
     }else if (!mimetype || mimetype === 'video/mp4') {
-      const fileName = await createUniqueName(name);
-      const command = await extractFramesFromVideo(content);
+      const command = await extractFramesFromVideo(buffer);
       command.save(`${dir}/${fileName}-%03d.png`);
-  } else{
-    throw errFactory.createError(ErrorType.BAD_REQUEST);
-  }
+    } else{
+      throw errFactory.createError(ErrorType.BAD_REQUEST);
+    }
   }
   return;
 }
@@ -157,7 +147,7 @@ async function saveFile(dir: any, file: any){
     const command = await extractFramesFromVideo(file.buffer);
     command.save(`${dir}/${fileName}-%03d.png`);
   } else if(file.mimetype === 'application/zip'){
-    await extractAndVerifyZip(file.buffer, dir);
+    await extractZip(file.buffer, dir);
   } else if (file.mimetype.startsWith('image/')){
     const fileName = await createUniqueName(file.originalname);
     const filePath = path.join(dir, `${fileName}.jpg`);
@@ -197,8 +187,8 @@ async function extractFramesFromVideo(videoBuffer: any) {
 }
 
 export async function upload(req: any, res: any) {
-  const transaction2 = await sequelize.transaction();
   const transaction = await sequelize.transaction();
+  const transaction2 = await sequelize.transaction();
 
   try {
       const dataset_name = req.body.name;
@@ -221,8 +211,7 @@ export async function upload(req: any, res: any) {
 
       for (const file of files){
         if (file.mimetype === 'application/zip') {
-          const zipBuffer = file.buffer;
-          let {video_count, img_count} = await countAndVerifyZip(zipBuffer);
+          const {video_count, img_count} = await countAndVerifyZip(file.buffer);
           count.zip_video += video_count;
           count.zip_img += img_count;
         }
@@ -234,9 +223,9 @@ export async function upload(req: any, res: any) {
         }
       }
 
-      const upload_price = (count.frame_count * 0.4) + (count.img_count * 0.65) + (count.zip_img * 0.7) + (count.zip_video * 0.7)
+      const upload_cost = (count.frame_count * 0.4) + (count.img_count * 0.65) + (count.zip_img * 0.7) + (count.zip_video * 0.7)
       
-      if (upload_price > user.tokens){
+      if (upload_cost > user.tokens){
         throw errFactory.createError(ErrorType.INSUFFICIENT_BALANCE);
       }
 
@@ -244,10 +233,10 @@ export async function upload(req: any, res: any) {
 
       const dataset_cost = await dataset.getCost();
 
-      await user.updateBalance(user.tokens - upload_price, transaction);
+      await user.updateBalance(user.tokens - upload_cost, transaction);
       await dataset.updateCost(dataset_cost + inference_cost, transaction2);
 
-      for (let file of files){
+      for (const file of files){
         await saveFile(dir, file);
       }
       await transaction.commit();
@@ -312,16 +301,16 @@ export async function getJob(req: any, res: any) {
     if (!flag) {
       resFactory.send(res, ResponseType.WORKER_ABORTED);
     } else if (await job.isCompleted()) {
-        resFactory.send(res, undefined, {status: 'COMPLETED', results: await job.returnvalue});
-      } else if (await job.isFailed()) {
-        resFactory.send(res, ResponseType.WORKER_FAILED); 
-      } else if (await job.isActive()) {
-        resFactory.send(res, ResponseType.WORKER_RUNNING);
-      } else if (await job.isWaiting()) {
-        resFactory.send(res, ResponseType.WORKER_PENDING);
-      } else {
-        throw errFactory.createError(ErrorType.INTERNAL_ERROR);
-      }
+      resFactory.send(res, undefined, {status: 'COMPLETED', results: await job.returnvalue});
+    } else if (await job.isFailed()) {
+      resFactory.send(res, ResponseType.WORKER_FAILED); 
+    } else if (await job.isActive()) {
+      resFactory.send(res, ResponseType.WORKER_RUNNING);
+    } else if (await job.isWaiting()) {
+      resFactory.send(res, ResponseType.WORKER_PENDING);
+    } else {
+      throw errFactory.createError(ErrorType.INTERNAL_ERROR);
+    }
   } catch(error: any) {
     sendError.send(res, error);
   }
@@ -353,7 +342,7 @@ export async function getTokens(req: any, res: any) {
 export async function recharge(req: any, res: any) {
   const transaction = await sequelize.transaction();
   try{
-    const user = req.user
+    const user = req.user;
     const tokens = req.body["tokens"];
     await user.updateBalance(user.tokens + tokens, transaction)
     transaction.commit();
