@@ -299,6 +299,7 @@ class yolov10_heatmap:
         grayscale_cam = grayscale_cam[0, :]
 
         pred1 = self.model(tensor)['one2many']
+        #pred1 = self.model(tensor)[0]
         pred = self.post_process(pred1)
         if self.renormalize:
             cam_image = self.renormalize_cam(
