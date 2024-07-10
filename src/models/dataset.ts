@@ -6,18 +6,11 @@ import { ErrorFactory, ErrorType } from '../factory/errFactory';
 const sequelize = SequelizeDB.getConnection();
 const errorHandler = new ErrorFactory();
 
-interface DatasetData {
-  name_dataset: string;
-  cost?: number,
-  id_creator: number;
-  id_dataset?: number;
-}
-
-class Dataset extends Model implements DatasetData{
-  public id_dataset!: number;
-  public cost!: number;
-  public name_dataset!: string;
-  public id_creator!: number;
+class Dataset extends Model {
+  private id_dataset!: number;
+  private cost!: number;
+  private name_dataset!: string;
+  private id_creator!: number;
 
   async getCost() {
     return this.cost;

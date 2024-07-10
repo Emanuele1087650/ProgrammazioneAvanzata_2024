@@ -5,19 +5,12 @@ import { ErrorFactory, ErrorType } from '../factory/errFactory';
 const sequelize = SequelizeDB.getConnection();
 const errorHandler = new ErrorFactory();
 
-interface UserData {
-  username: string;
-  email: string;
-  role?: 'ADMIN' | 'USER';
-  tokens?: number;
-}
-
-class User extends Model implements UserData{
-  public id_user!: number;
-  public username!: string;
-  public email!: string;
-  public role!: 'ADMIN' | 'USER';
-  public tokens!: number;
+class User extends Model {
+  private id_user!: number;
+  private username!: string;
+  private email!: string;
+  private role!: 'ADMIN' | 'USER';
+  private tokens!: number;
 
   async getBalance() {
     return this.tokens

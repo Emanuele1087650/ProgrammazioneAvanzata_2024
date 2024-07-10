@@ -40,7 +40,7 @@ export async function createDatasets(req: any, res: any) {
     }, 
       transaction
     );
-    var dir = `/usr/app/Datasets/${user.username}/${name_dataset}`;
+    const dir = `/usr/app/Datasets/${user.username}/${name_dataset}`;
     if (!fs.existsSync(dir)){
       fs.mkdirSync(dir, { recursive: true });
     } else {
@@ -87,10 +87,8 @@ export async function updateDataset(req: any, res: any) {
 
 async function createUniqueName(originalName: any){
   const baseName = originalName.replace(/\.[^/.]+$/, "");
-  //const uuid = uuidv4();
   const timestamp = Date.now();
   return `${baseName}-${timestamp}`;
-  //return `${baseName}-${uuid}`;
 }
 
 async function countAndVerifyZip(zipBuffer: any) {  
@@ -144,7 +142,7 @@ async function extractAndVerifyZip(zipBuffer: any, dir: any) {
       fs.writeFileSync(filePath, content);
     }else if (!mimetype || mimetype === 'video/mp4') {
       const fileName = await createUniqueName(name);
-      let command = await extractFramesFromVideo(content);
+      const command = await extractFramesFromVideo(content);
       command.save(`${dir}/${fileName}-%03d.png`);
   } else{
     throw errFactory.createError(ErrorType.BAD_REQUEST);
@@ -153,10 +151,10 @@ async function extractAndVerifyZip(zipBuffer: any, dir: any) {
   return;
 }
 
-async function saveFile(fs: any, dir: any, file: any){
+async function saveFile(dir: any, file: any){
   if(file.mimetype === 'video/mp4'){
     const fileName = await createUniqueName(file.originalname);
-    let command = await extractFramesFromVideo(file.buffer);
+    const command = await extractFramesFromVideo(file.buffer);
     command.save(`${dir}/${fileName}-%03d.png`);
   } else if(file.mimetype === 'application/zip'){
     await extractAndVerifyZip(file.buffer, dir);
@@ -170,7 +168,7 @@ async function saveFile(fs: any, dir: any, file: any){
 }
 
 async function countFrame (buffer: any){
-  let command = await extractFramesFromVideo(buffer);
+  const command = await extractFramesFromVideo(buffer);
   let frame_count = 0
   return new Promise<number>((resolve, reject) => {
     command
@@ -221,7 +219,7 @@ export async function upload(req: any, res: any) {
           zip_video: 0
       };
 
-      for (let file of files){
+      for (const file of files){
         if (file.mimetype === 'application/zip') {
           const zipBuffer = file.buffer;
           let {video_count, img_count} = await countAndVerifyZip(zipBuffer);
@@ -236,19 +234,21 @@ export async function upload(req: any, res: any) {
         }
       }
 
-      let upload_price = (count.frame_count * 0.4) + (count.img_count * 0.65) + (count.zip_img * 0.7) + (count.zip_video * 0.7)
+      const upload_price = (count.frame_count * 0.4) + (count.img_count * 0.65) + (count.zip_img * 0.7) + (count.zip_video * 0.7)
       
       if (upload_price > user.tokens){
         throw errFactory.createError(ErrorType.INSUFFICIENT_BALANCE);
       }
 
-      let inference_cost = ((count.frame_count + count.zip_video) * 1.5) + ((count.img_count + count.zip_img) * 2.75)
+      const inference_cost = ((count.frame_count + count.zip_video) * 1.5) + ((count.img_count + count.zip_img) * 2.75)
+
+      const dataset_cost = await dataset.getCost();
 
       await user.updateBalance(user.tokens - upload_price, transaction);
-      await dataset.updateCost(dataset.cost + inference_cost, transaction2);
+      await dataset.updateCost(dataset_cost + inference_cost, transaction2);
 
       for (let file of files){
-        await saveFile(fs, dir, file);
+        await saveFile(dir, file);
       }
       await transaction.commit();
       await transaction2.commit();
@@ -270,14 +270,15 @@ export async function addQueue(req: any, res: any) {
     const cam_cls = req.body["cam_cls"]; 
     const user = req.user;
     const dataset = await getDatasetByName(name_dataset, user.id_user);
-    var dir = `/usr/app/Datasets/${user.username}/${dataset.name_dataset}`;
+    const dir = `/usr/app/Datasets/${user.username}/${name_dataset}`;
     const files = fs.readdirSync(dir);
     if (files.length === 0) {
       throw errFactory.createError(ErrorType.DATASET_EMPTY);
     }
     let flag: boolean;
-    if (user.tokens >= dataset.cost) {
-      await user.updateBalance(user.tokens - dataset.cost, transaction);
+    const dataset_cost = await dataset.getCost();
+    if (user.tokens >= dataset_cost) {
+      await user.updateBalance(user.tokens - dataset_cost, transaction);
       await transaction.commit();
       flag = true;
     } else {
