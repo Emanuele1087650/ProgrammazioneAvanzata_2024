@@ -86,4 +86,3 @@ export async function checkAdmin(req: any, res: any, next: any) {
     sendError.send(res, err);
   }
 }
-
