@@ -8,6 +8,7 @@ from yolo_cam.eigen_cam import EigenCAM
 from yolo_cam.utils.image import show_cam_on_image
 import cv2
 from YOLOv10_Explainer import yolov10_heatmap 
+from YOLOv8_Explainer import yolov8_heatmap 
 from flask import Flask, jsonify, request, url_for
 import zipfile
 import urllib.parse
@@ -64,7 +65,7 @@ def inference():
         
         num_detect = result[0].boxes.shape[0]
         
-        if cam_detection:
+        if cam_detection and num_detect > 0:
             img = detection_cam(dataset+image, model=MODEL_DET_PATH)
             if (img is not None):
                 img.save(f'{result_path}/cam_detection.jpg')
@@ -120,6 +121,7 @@ def inference():
         cv2.imwrite(f'{result_path}/detection.jpg', np_array_image2)
         
         labels_dict = []
+        url_cam_detection = []
         
         for i, _ in enumerate(labels):
             labels_dict.append({
@@ -131,27 +133,40 @@ def inference():
             labels_dict_cam.append({
                 "url": f'http://127.0.0.1:8000/{urllib.parse.quote(result_path, safe='')}/classificazione/eigen_cam{i}.jpg' 
             })
+
+        if ('cam_detection.jpg' in os.listdir(result_path) and num_detect > 0):
+            url_cam_detection = f'http://127.0.0.1:8000/{urllib.parse.quote(result_path, safe='')}/cam_detection.jpg'
         
         result_inference.append({
             "image_name": image_name,
             "num_detection": num_detect,
             "result": labels_dict,
             "url": f'http://127.0.0.1:8000/{urllib.parse.quote(result_path, safe='')}/detection.jpg',
-            "url_cam_detection": f'http://127.0.0.1:8000/{urllib.parse.quote(result_path, safe='')}/cam_detection.jpg' if 'cam_detection.jpg' in os.listdir(result_path) else None,
+            "url_cam_detection": url_cam_detection if cam_detection else None,
             "url_cam_classification": labels_dict_cam if cam_cls else None
         })
         
     return json.dumps(result_inference)
         
 def detection_cam(img, model, conf_threshold=0.4, method="GradCAM", layer=[16]):  
-    model = yolov10_heatmap(
-        weight = model, 
-        conf_threshold = conf_threshold, 
-        device = 'cpu',
-        method = method, 
-        layer = layer,
-        show_box = False,
-    )
+    if(model == "models/detect/YOLOv10M.pt"):
+        model = yolov10_heatmap(
+            weight = model, 
+            conf_threshold = conf_threshold, 
+            device = 'cpu',
+            method = method, 
+            layer = layer,
+            show_box = False,
+        )
+    elif (model == "models/detect/YOLOv8M.pt"):
+        model = yolov8_heatmap(
+            weight = model, 
+            conf_threshold = conf_threshold, 
+            device = 'cpu',
+            method = method, 
+            layer = layer,
+            show_box = False,
+        )
     imagelist = model(img)
     return imagelist[0]
 
