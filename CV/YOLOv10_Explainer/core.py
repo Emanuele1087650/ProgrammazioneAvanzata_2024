@@ -294,7 +294,6 @@ class yolov10_heatmap:
         try:
             grayscale_cam = self.method(tensor, [self.target])
         except AttributeError as e:
-            print(e)
             return
         grayscale_cam = grayscale_cam[0, :]
 
