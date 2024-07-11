@@ -90,10 +90,8 @@ User.init({
   freezeTableName: true,
 });
 
-async function getUserById(id_user: number) {
-  const user = await User.findByPk(id_user, {
-    raw: true,
-  }).catch(() => {
+async function getUserById(id_user: number): Promise<User> {
+  const user = await User.findByPk(id_user).catch(() => {
     throw errorHandler.createError(ErrorType.INTERNAL_ERROR);
   });
   if (!user) {
@@ -102,7 +100,7 @@ async function getUserById(id_user: number) {
   return user;
 }
 
-async function getUserByUsername(username: string) {
+async function getUserByUsername(username: string): Promise<User> {
   const user = await User.findOne({
     where: { username },
   }).catch(() => {
