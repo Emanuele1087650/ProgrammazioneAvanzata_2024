@@ -9,7 +9,7 @@ interface GoodResponse {
 }
 
 export enum ResponseType {
-  UPLOAD_DATASET,
+  DATASET_UPLOADED,
   DATASET_DELETED,
   DATASET_UPDATED,
   FILE_UPLOADED,
@@ -22,9 +22,9 @@ export enum ResponseType {
 
 export class ResponseFactory {
   private responseMap: Record<ResponseType, GoodResponse> = {
-    [ResponseType.UPLOAD_DATASET]: {
+    [ResponseType.DATASET_UPLOADED]: {
       code: HttpStatusCode.OK,
-      status: ResponseType[ResponseType.UPLOAD_DATASET],
+      status: ResponseType[ResponseType.DATASET_UPLOADED],
       message: Messages.UPLOAD_DATASET,
     },
     [ResponseType.DATASET_DELETED]: {

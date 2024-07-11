@@ -39,6 +39,8 @@ enum ErrorType {
   UPDATE_COST_FAILED,
   NO_HEADER_BEARER,
   NOT_OWNER_JOB,
+  MISSING_ENV_VARIABLE,
+  DATASET_MEMORY_EXIST,
 }
 
 class CustomError extends Error {
@@ -206,6 +208,16 @@ class ErrorFactory {
       code: HttpStatusCode.BAD_REQUEST,
       name: ErrorType[ErrorType.NOT_OWNER_JOB],
       message: Messages.NOT_OWNER_JOB,
+    },
+    [ErrorType.MISSING_ENV_VARIABLE]: {
+      code: HttpStatusCode.BAD_REQUEST,
+      name: ErrorType[ErrorType.MISSING_ENV_VARIABLE],
+      message: Messages.MISSING_ENV_VARIABLE,
+    },
+    [ErrorType.DATASET_MEMORY_EXIST]: {
+      code: HttpStatusCode.BAD_REQUEST,
+      name: ErrorType[ErrorType.DATASET_MEMORY_EXIST],
+      message: Messages.DATASET_MEMORY_EXIST,
     },
   };
 

@@ -53,6 +53,7 @@ User.init(
       type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true,
+      field: "id_user",
     },
     username: {
       type: DataTypes.TEXT,

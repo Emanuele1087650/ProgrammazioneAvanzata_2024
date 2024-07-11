@@ -1,21 +1,21 @@
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS dataset;
 
-CREATE TYPE userRole AS ENUM ('ADMIN', 'USER');
+CREATE TYPE user_role AS ENUM ('ADMIN', 'USER');
 CREATE TYPE requestStatus AS ENUM ('PENDING', 'RUNNING', 'FAILED', 'ABORTED', 'COMPLETED');
 
 CREATE TABLE users (
-    idUser SERIAL PRIMARY KEY NOT NULL,
+    id_user SERIAL PRIMARY KEY NOT NULL,
     username TEXT UNIQUE NOT NULL,
     email TEXT UNIQUE NOT NULL,
-    role userRole DEFAULT 'USER' NOT NULL,
+    role user_role DEFAULT 'USER' NOT NULL,
     tokens REAL DEFAULT 100 NOT NULL
 );
 CREATE TABLE dataset (
-    idDataset SERIAL PRIMARY KEY NOT NULL,
+    id_dataset SERIAL PRIMARY KEY NOT NULL,
     cost REAL NOT NULL,
-    nameDataset TEXT NOT NULL,
-    idCreator INTEGER REFERENCES users(idUser) NOT NULL
+    name_dataset TEXT NOT NULL,
+    id_creator INTEGER REFERENCES users(id_user) NOT NULL
 );
 
 INSERT INTO users (username, email, role) VALUES
