@@ -292,6 +292,14 @@ export async function addQueue(req: any, res: any) {
   }
 }
 
+async function checkJobOwner (job:any, user:any){
+  if (user.id_user === job.data.user.id_user){
+    return;
+  }else {
+    throw errFactory.createError(ErrorType.NOT_OWNER_JOB);
+  }
+}
+
 export async function getJob(req: any, res: any) {
   try {
     const jobId = req.body["jobId"];
@@ -299,25 +307,21 @@ export async function getJob(req: any, res: any) {
     if (job === undefined) {
       throw errFactory.createError(ErrorType.JOB_NOT_FOUND);
     }
-    const { flag, user, dataset, model, cam_det, cam_cls } = job?.data;
-    if (user.id_user === req.user.id_user){
-      if (!flag) {
-        resFactory.send(res, ResponseType.WORKER_ABORTED);
-      } else if (await job.isCompleted()) {
-        resFactory.send(res, undefined, {status: 'COMPLETED', results: await job.returnvalue});
-      } else if (await job.isFailed()) {
-        resFactory.send(res, ResponseType.WORKER_FAILED); 
-      } else if (await job.isActive()) {
-        resFactory.send(res, ResponseType.WORKER_RUNNING);
-      } else if (await job.isWaiting()) {
-        resFactory.send(res, ResponseType.WORKER_PENDING);
-      } else {
-        throw errFactory.createError(ErrorType.INTERNAL_ERROR);
-      }
-    }else {
-      throw errFactory.createError(ErrorType.NOT_OWNER_JOB);
+    await checkJobOwner(job, req.user)
+    const flag = job.data.flag;
+    if (!flag) {
+      resFactory.send(res, ResponseType.WORKER_ABORTED);
+    } else if (await job.isCompleted()) {
+      resFactory.send(res, undefined, {status: 'COMPLETED', results: await job.returnvalue});
+    } else if (await job.isFailed()) {
+      resFactory.send(res, ResponseType.WORKER_FAILED); 
+    } else if (await job.isActive()) {
+      resFactory.send(res, ResponseType.WORKER_RUNNING);
+    } else if (await job.isWaiting()) {
+      resFactory.send(res, ResponseType.WORKER_PENDING);
+    } else {
+      throw errFactory.createError(ErrorType.INTERNAL_ERROR);
     }
-    
   } catch(error: any) {
     sendError.send(res, error);
   }
@@ -331,6 +335,7 @@ export async function getResults(req: any, res: any) {
       throw errFactory.createError(ErrorType.JOB_NOT_FOUND);
     }
     const flag = job.data.flag;
+    await checkJobOwner(job, req.user)
     if (await job.isCompleted() && flag) {
       resFactory.send(res, undefined, {status: 'COMPLETED', result: await job.returnvalue});
     } else {
