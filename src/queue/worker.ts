@@ -2,6 +2,7 @@ import { Worker, Job, Queue } from 'bullmq';
 import { Redis, RedisOptions } from 'ioredis';
 import { ErrorFactory, ErrorType } from '../factory/errFactory';
 import { SequelizeDB } from '../singleton/sequelize';
+import { getUserById, getUserByUsername, User } from '../models/users';
 
 const errFactory = new ErrorFactory();
 const MAX_COMPLETED_JOBS_PER_USER = 50;
@@ -31,7 +32,7 @@ const inferenceWorker = new Worker('inferenceQueue', async (job: Job) => {
             },
             body: JSON.stringify({
                 job_id: job.id,
-                user: user.username,
+                user: user.use,
                 name: dataset.name_dataset,
                 model: model,
                 cam_det: cam_det,
@@ -72,13 +73,8 @@ inferenceWorker.on('completed', async (job) => {
 
 inferenceWorker.on('failed', async (job) => {
   const transaction = await SequelizeDB.getConnection().transaction();
-  const user = job?.data.user;
+  const user: User = await getUserById(job?.data.user.id_user);
   const dataset = job?.data.dataset;
-  /*
-  await user.updateBalance(user.tokens + dataset.cost, transaction).catch(async () => {
-    await transaction.rollback();
-  });
-  */
   await user.addTokens(dataset.cost, transaction).catch(async () => {
     await transaction.rollback();
   });

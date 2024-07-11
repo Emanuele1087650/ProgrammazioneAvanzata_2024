@@ -11,7 +11,8 @@ import ffmpeg from 'fluent-ffmpeg';
 import AdmZip from 'adm-zip';
 import mime from 'mime-types';
 import * as fs from 'fs';
-import { User } from "../models/users";
+import { getUserById, getUserByUsername, User } from "../models/users";
+import { Transaction } from "sequelize";
 
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 ffmpeg.setFfmpegPath(ffmpegPath);
@@ -232,8 +233,8 @@ export async function upload(req: any, res: any) {
       }
       await transaction.commit();
       await transaction2.commit();
-
       resFactory.send(res, ResponseType.FILE_UPLOADED);
+
   } catch(error: any) {
     await transaction.rollback();
     await transaction2.rollback();
@@ -248,17 +249,16 @@ export async function addQueue(req: any, res: any) {
     const model = req.body["model"];
     const cam_det = req.body["cam_det"];
     const cam_cls = req.body["cam_cls"]; 
-    const user = req.user;
-    const dataset = await getDatasetByName(name_dataset, user.id_user);
-    const dir = `/usr/app/Datasets/${user.username}/${name_dataset}`;
+    const user: User = req.user;
+    const dataset = await getDatasetByName(name_dataset, await user.getUserId());
+    const dir = `/usr/app/Datasets/${await user.getUsername()}/${name_dataset}`;
     const files = fs.readdirSync(dir);
     if (files.length === 0) {
       throw errFactory.createError(ErrorType.DATASET_EMPTY);
     }
     let flag: boolean;
     const dataset_cost = await dataset.getCost();
-    if (user.tokens >= dataset_cost) {
-      //await user.updateBalance(user.tokens - dataset_cost, transaction);
+    if (await user.getBalance() >= dataset_cost) {
       await user.removeTokens(dataset_cost, transaction);
       await transaction.commit();
       flag = true;
@@ -282,10 +282,10 @@ export async function addQueue(req: any, res: any) {
   }
 }
 
-async function checkJobOwner (job:any, user:any){
-  if (user.id_user === job.data.user.id_user){
+async function checkJobOwner (job:any, user: User){
+  if (await user.getUserId() === job.data.user.id_user) {
     return;
-  }else {
+  } else {
     throw errFactory.createError(ErrorType.NOT_OWNER_JOB);
   }
 }
@@ -300,15 +300,15 @@ export async function getJob(req: any, res: any) {
     await checkJobOwner(job, req.user)
     const flag = job.data.flag;
     if (!flag) {
-      resFactory.send(res, ResponseType.WORKER_ABORTED);
+      resFactory.send(res, ResponseType.ABORTED);
     } else if (await job.isCompleted()) {
       resFactory.send(res, undefined, {status: 'COMPLETED', results: await job.returnvalue});
     } else if (await job.isFailed()) {
-      resFactory.send(res, ResponseType.WORKER_FAILED); 
+      resFactory.send(res, ResponseType.FAILED); 
     } else if (await job.isActive()) {
-      resFactory.send(res, ResponseType.WORKER_RUNNING);
+      resFactory.send(res, ResponseType.RUNNING);
     } else if (await job.isWaiting()) {
-      resFactory.send(res, ResponseType.WORKER_PENDING);
+      resFactory.send(res, ResponseType.PENDING);
     } else {
       throw errFactory.createError(ErrorType.INTERNAL_ERROR);
     }
@@ -337,16 +337,16 @@ export async function getResults(req: any, res: any) {
 }
 
 export async function getTokens(req: any, res: any) {
-  const tokens = req.user.tokens;
+  const user: User = req.user;
+  const tokens = await user.getBalance();
   resFactory.send(res, undefined, {tokens: tokens});
 }
 
 export async function recharge(req: any, res: any) {
   const transaction = await sequelize.transaction();
   try{
-    const user = req.user;
+    const user: User = req.user;
     const tokens = req.body["tokens"];
-    //await user.updateBalance(user.tokens + tokens, transaction)
     await user.addTokens(tokens, transaction)
     transaction.commit();
     resFactory.send(res, ResponseType.RECHARGED);
