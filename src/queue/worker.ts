@@ -26,7 +26,9 @@ const inferenceWorker = new Worker(
   async (job: Job) => {
     const { flag, user, dataset, model, camDet, camCls } = job.data;
     if (flag) {
-      const response: Response = await fetch('http://cv:8000/inference', {
+      const CV_HOST = process.env.CV_HOST;
+      const CV_PORT = Number(process.env.CV_PORT);
+      const response: Response = await fetch(`http://${CV_HOST}:${CV_PORT}/inference`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

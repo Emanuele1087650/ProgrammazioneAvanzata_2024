@@ -15,12 +15,12 @@ export const ADMIN = [
 
 export const DATASET = [
   Validation.validateBody,
-  Validation.validateDataset,
+  Validation.validateDataset
 ];
 
 export const UPDATE = [
   Validation.validateBody,
-  Validation.validateUpdate,
+  Validation.validateUpdate
 ];
 
 export const INFERENCE = [
@@ -36,9 +36,9 @@ export const UPLOAD = [
 
 export const JOB = [
   Validation.validateBody,
-  Validation.validateJob,
+  Validation.validateJob
 ];
 
 export const RECHARGE = [
-  Validation.validateRecharge,
+  Validation.validateRecharge
 ];

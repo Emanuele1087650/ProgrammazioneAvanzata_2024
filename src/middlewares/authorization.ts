@@ -1,8 +1,8 @@
-import * as dotenv from 'dotenv';
-import jwt from 'jsonwebtoken';
 import { getUserByUsername, User } from '../models/users';
 import { ErrorFactory, ErrorType } from '../factory/errFactory';
 import ErrorSender from '../utils/error_sender';
+import jwt from 'jsonwebtoken';
+import * as dotenv from 'dotenv';
 
 dotenv.config();
 

@@ -1,10 +1,10 @@
-import * as dotenv from 'dotenv';
-import express from 'express';
 import { SequelizeDB } from './singleton/sequelize';
-import * as Middleware from './middlewares/middleware';
+import { ErrorFactory, ErrorType } from './factory/errFactory';
+import express from 'express';
 import router from './routes/router';
 import ErrorSender from './utils/error_sender';
-import { ErrorFactory, ErrorType } from './factory/errFactory';
+import * as Middleware from './middlewares/middleware';
+import * as dotenv from 'dotenv';
 
 dotenv.config();
 
@@ -25,9 +25,7 @@ app.use('*', (_req, res) => {
 
 app.listen(port, () => {
   console.log(`App in ascolto sulla porta ${port}...`);
-  sequelize
-  .sync()
-  .then(() => {
+  sequelize.sync().then(() => {
     console.log('Tabelle sincronizzate.');
   });
 });

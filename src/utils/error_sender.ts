@@ -1,6 +1,6 @@
 import { Response } from 'express';
-import HttpStatusCode from './status_code';
 import { CustomError } from '../factory/errFactory';
+import HttpStatusCode from './status_code';
 
 class ErrorSender {
   send(res: Response, err: CustomError | Error): void {

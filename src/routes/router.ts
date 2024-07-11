@@ -1,7 +1,7 @@
 import express from 'express';
+import multer from 'multer';
 import * as Middleware from '../middlewares/middleware';
 import * as Controller from '../controllers/controller';
-import multer from 'multer';
 
 const router = express.Router();
 const upload = multer().any();
@@ -23,17 +23,15 @@ router.post(
 );
 
 router.post('/datasets',
-    async (req: any, res: any) => {
+  async (req: any, res: any) => {
     Controller.getAllDatasets(req, res);
 });
 
-router.post(
-  '/updateDataset',
+router.post('/updateDataset',
   Middleware.UPDATE,
   async (req: any, res: any) => {
     Controller.updateDataset(req, res);
-  },
-);
+});
 
 router.post(
   '/upload',
@@ -44,13 +42,11 @@ router.post(
   },
 );
 
-router.post(
-  '/inference',
+router.post('/inference',
   Middleware.INFERENCE,
   async (req: any, res: any) => {
     Controller.addQueue(req, res);
-  },
-);
+});
 
 router.post('/job',
   Middleware.JOB,
@@ -59,14 +55,14 @@ router.post('/job',
 });
 
 router.post('/results',
-    Middleware.JOB,
-    async (req: any, res: any) => {
-        Controller.getResults(req, res);
+  Middleware.JOB,
+  async (req: any, res: any) => {
+    Controller.getResults(req, res);
 });
 
 router.post('/tokens',
-    async (req: any, res: any) => {
-        Controller.getTokens(req, res);
+  async (req: any, res: any) => {
+    Controller.getTokens(req, res);
 });
 
 router.post(

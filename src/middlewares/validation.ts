@@ -105,7 +105,8 @@ export function validateRecharge(req: any, res: any, next: any): void {
   const requiredKeys = ['user', 'tokens'];
   const requiredStringKeys = ['user'];
   const requiredNumberKeys = ['tokens'];
-  if (validateStringKeys(req.body, requiredStringKeys, res) &&
+  if (
+    validateStringKeys(req.body, requiredStringKeys, res) &&
     validateNumberKeys(req.body, requiredNumberKeys, res) &&
     validateRequiredKeys(req.body, requiredKeys, res)
   ) {

@@ -1,6 +1,6 @@
+import { Response } from 'express';
 import HttpStatusCode from '../utils/status_code';
 import Messages from '../utils/messages';
-import { Response } from 'express';
 
 interface GoodResponse {
   code: number;
