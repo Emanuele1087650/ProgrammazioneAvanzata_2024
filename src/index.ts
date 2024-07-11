@@ -1,10 +1,12 @@
-require("dotenv").config();
+import * as dotenv from 'dotenv';
 import express from "express";
 import { SequelizeDB } from "./singleton/sequelize";
 import * as Middleware from "./middlewares/middleware";
 import router from "./routes/router";
 import ErrorSender from "./utils/error_sender";
 import { ErrorFactory, ErrorType } from "./factory/errFactory";
+
+dotenv.config();
 
 const sequelize = SequelizeDB.getConnection();
 const errFactory = new ErrorFactory();

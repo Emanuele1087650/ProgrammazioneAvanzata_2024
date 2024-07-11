@@ -4,3 +4,4 @@
 /CV/static
 __pycache__
 *.txt
+/eslint.config.js

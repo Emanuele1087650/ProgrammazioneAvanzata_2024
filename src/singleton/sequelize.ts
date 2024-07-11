@@ -1,5 +1,7 @@
-require("dotenv").config();
+import * as dotenv from 'dotenv';
 import { Sequelize } from "sequelize";
+
+dotenv.config();
 
 /**
  * Classe 'SequelizeSingleton'

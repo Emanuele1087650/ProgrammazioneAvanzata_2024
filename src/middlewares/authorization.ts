@@ -1,8 +1,10 @@
-require("dotenv").config();
+import * as dotenv from 'dotenv';
 import jwt from "jsonwebtoken";
 import { getUserByUsername, User } from "../models/users";
 import { ErrorFactory, ErrorType } from "../factory/errFactory";
 import ErrorSender from "../utils/error_sender";
+
+dotenv.config();
 
 const errFactory = new ErrorFactory();
 const sendError = new ErrorSender();

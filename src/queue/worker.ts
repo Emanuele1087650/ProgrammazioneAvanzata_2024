@@ -2,7 +2,7 @@ import { Worker, Job, Queue } from 'bullmq';
 import { Redis, RedisOptions } from 'ioredis';
 import { ErrorFactory, ErrorType } from '../factory/errFactory';
 import { SequelizeDB } from '../singleton/sequelize';
-import { getUserById, getUserByUsername, User } from '../models/users';
+import { getUserById, User } from '../models/users';
 
 const errFactory = new ErrorFactory();
 const MAX_COMPLETED_JOBS_PER_USER = 50;
@@ -25,7 +25,7 @@ const inferenceWorker = new Worker('inferenceQueue', async (job: Job) => {
 
     const { flag, user, dataset, model, cam_det, cam_cls } = job.data;
     if (flag) {
-        const response: any = await fetch("http://cv:8000/inference", {
+        const response: Response = await fetch("http://cv:8000/inference", {
             method: 'POST',
             headers: {
             'Content-Type': 'application/json'

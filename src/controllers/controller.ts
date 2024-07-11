@@ -11,11 +11,10 @@ import ffmpeg from 'fluent-ffmpeg';
 import AdmZip from 'adm-zip';
 import mime from 'mime-types';
 import * as fs from 'fs';
-import { getUserById, getUserByUsername, User } from "../models/users";
-import { Transaction } from "sequelize";
+import { User } from "../models/users";
+import ffmpegInstaller from '@ffmpeg-installer/ffmpeg';
 
-const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
-ffmpeg.setFfmpegPath(ffmpegPath);
+ffmpegInstaller.path;
 
 const sendError = new ErrorSender();
 const resFactory = new ResponseFactory();

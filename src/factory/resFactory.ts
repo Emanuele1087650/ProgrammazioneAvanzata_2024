@@ -37,7 +37,7 @@ export class ResponseFactory {
         return this.responseMap[type];
     }
 
-    send(res: Response, type?: ResponseType, data?: Object | Messages): void {
+    send(res: Response, type?: ResponseType, data?: any | Messages): void {
         if(type !== undefined) {
             const { code, status, message } = this.getResponse(type);
             res.status(code).json({status: status, message: message});
