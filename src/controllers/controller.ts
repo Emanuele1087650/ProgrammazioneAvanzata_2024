@@ -9,13 +9,12 @@ import { getUserByUsername, User } from '../models/users';
 import ffmpeg from 'fluent-ffmpeg';
 import AdmZip from 'adm-zip';
 import mime from 'mime-types';
-//import ffmpegInstaller from '@ffmpeg-installer/ffmpeg';
+import ffmpegInstaller from '@ffmpeg-installer/ffmpeg';
 import ErrorSender from '../utils/error_sender';
 import path from 'path';
 import * as fs from 'fs';
 
-const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path
-ffmpeg.setFfmpegPath(ffmpegPath);
+ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
 const sendError = new ErrorSender();
 const resFactory = new ResponseFactory();
