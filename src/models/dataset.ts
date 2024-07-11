@@ -16,6 +16,10 @@ class Dataset extends Model {
     return this.cost;
   }
 
+  async getName() {
+    return this.name_dataset;
+  }
+
   async updateCost(new_cost: number, transaction: Transaction) {
     const data = {cost: new_cost};
     await this.update(data, {

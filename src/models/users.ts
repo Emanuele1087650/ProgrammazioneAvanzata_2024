@@ -6,14 +6,26 @@ const sequelize = SequelizeDB.getConnection();
 const errorHandler = new ErrorFactory();
 
 class User extends Model {
-  public id_user!: number;
-  public username!: string;
-  public email!: string;
-  public role!: 'ADMIN' | 'USER';
-  public tokens!: number;
+  private id_user!: number;
+  private username!: string;
+  private email!: string;
+  private role!: 'ADMIN' | 'USER';
+  private tokens!: number;
+
+  async getUserId() {
+    return this.id_user;
+  }
+
+  async getUsername() {
+    return this.username;
+  }
+
+  async getRole() {
+    return this.role;
+  }
 
   async getBalance() {
-    return this.tokens
+    return this.tokens;
   }
 
   async updateBalance(new_balance: number, transaction: Transaction) {

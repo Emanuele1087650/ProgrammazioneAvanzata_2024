@@ -2,7 +2,7 @@ import ErrorSender from "../utils/error_sender";
 import { ResponseFactory, ResponseType } from "../factory/resFactory";
 import { SequelizeDB } from "../singleton/sequelize";
 import { ErrorFactory, ErrorType } from "../factory/errFactory";
-import { createDataset, getAllDataset, getDatasetByName } from '../models/dataset';
+import { createDataset, Dataset, getAllDataset, getDatasetByName } from '../models/dataset';
 import path from 'path';
 import { inferenceQueue } from '../queue/worker';
 import { Job } from 'bullmq';
@@ -22,9 +22,9 @@ const errFactory = new ErrorFactory();
 const sequelize = SequelizeDB.getConnection();
 
 export async function getAllDatasets(req: any, res: any) {
-  const user = req.user
+  const user: User = req.user
   try {
-    resFactory.send(res, undefined, await getAllDataset(user.id_user));
+    resFactory.send(res, undefined, await getAllDataset(await user.getUserId()));
   } catch(error: any) {
     sendError.send(res, error);
   }
@@ -34,14 +34,14 @@ export async function createDatasets(req: any, res: any) {
   const transaction = await sequelize.transaction();
   try{
     const name_dataset = req.body["name"];
-    const user = req.user;
+    const user: User = req.user;
     await createDataset({
       name_dataset: name_dataset,
-      id_creator: user.id_user,
+      id_creator: await user.getUserId(),
     }, 
       transaction
     );
-    const dir = `/usr/app/Datasets/${user.username}/${name_dataset}`;
+    const dir = `/usr/app/Datasets/${await user.getUsername()}/${name_dataset}`;
     if (!fs.existsSync(dir)){
       fs.mkdirSync(dir, { recursive: true });
     } else {
@@ -59,8 +59,8 @@ export async function deleteDataset(req: any, res: any) {
   const transaction = await sequelize.transaction();
   try {
     const name_dataset = req.body["name"];
-    const user = req.user;
-    const dataset = await getDatasetByName(name_dataset, user.id_user);
+    const user: User = req.user;
+    const dataset: Dataset = await getDatasetByName(name_dataset, await user.getUserId());
     await dataset.deleteDataset(transaction);
     await transaction.commit();
     resFactory.send(res, ResponseType.DATASET_DELETED);
@@ -75,8 +75,8 @@ export async function updateDataset(req: any, res: any) {
   try {
     const name_dataset = req.body["name"];
     const new_name = req.body["new_name"];
-    const user = req.user;
-    const dataset = await getDatasetByName(name_dataset, user.id_user);
+    const user: User = req.user;
+    const dataset: Dataset = await getDatasetByName(name_dataset, await user.getUserId());
     await dataset.updateDataset(new_name, transaction);
     await transaction.commit();
     resFactory.send(res, ResponseType.DATASET_UPDATED);
@@ -193,22 +193,18 @@ export async function upload(req: any, res: any) {
   try {
       const dataset_name = req.body.name;
       const files = req.files;
-      const user = req.user;
-
-      const dataset = await getDatasetByName(dataset_name, user.id_user);
-
-      const dir = `/usr/app/Datasets/${user.username}/${dataset_name}`;
+      const user: User = req.user;
+      const dataset: Dataset = await getDatasetByName(dataset_name, await user.getUserId());
+      const dir = `/usr/app/Datasets/${await user.getUsername()}/${dataset_name}`;
       if (!fs.existsSync(dir)) {
           throw errFactory.createError(ErrorType.NO_DATASET_NAME);
       }
-
       const count = {
           img_count: 0,
           frame_count: 0,
           zip_img: 0,
           zip_video: 0
       };
-
       for (const file of files){
         if (file.mimetype === 'application/zip') {
           const {video_count, img_count} = await countAndVerifyZip(file.buffer);
@@ -222,21 +218,15 @@ export async function upload(req: any, res: any) {
           count.frame_count += await countFrame(file.buffer);
         }
       }
-
       const upload_cost = (count.frame_count * 0.4) + (count.img_count * 0.65) + (count.zip_img * 0.7) + (count.zip_video * 0.7)
-      
-      if (upload_cost > user.tokens){
+      if (upload_cost > await user.getBalance()){
         throw errFactory.createError(ErrorType.INSUFFICIENT_BALANCE);
       }
-
       const inference_cost = ((count.frame_count + count.zip_video) * 1.5) + ((count.img_count + count.zip_img) * 2.75)
-
       const dataset_cost = await dataset.getCost();
 
-      //await user.updateBalance(user.tokens - upload_cost, transaction);
       await user.removeTokens(upload_cost, transaction);
       await dataset.updateCost(dataset_cost + inference_cost, transaction2);
-
       for (const file of files){
         await saveFile(dir, file);
       }
