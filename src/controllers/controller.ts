@@ -9,12 +9,13 @@ import { User } from '../models/users';
 import ffmpeg from 'fluent-ffmpeg';
 import AdmZip from 'adm-zip';
 import mime from 'mime-types';
-import ffmpegInstaller from '@ffmpeg-installer/ffmpeg';
+//import ffmpegInstaller from '@ffmpeg-installer/ffmpeg';
 import ErrorSender from '../utils/error_sender';
 import path from 'path';
 import * as fs from 'fs';
 
-ffmpeg.setFfmpegPath(ffmpegInstaller.path);
+const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path
+ffmpeg.setFfmpegPath(ffmpegPath);
 
 const sendError = new ErrorSender();
 const resFactory = new ResponseFactory();
@@ -41,8 +42,8 @@ export async function createDatasets(req: any, res: any) {
     const user: User = req.user;
     await createDataset(
       {
-        name_dataset: nameDataset,
-        id_creator: await user.getUserId(),
+        nameDataset: nameDataset,
+        idCreator: await user.getUserId(),
       },
       transaction,
     );
@@ -50,10 +51,10 @@ export async function createDatasets(req: any, res: any) {
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     } else {
-      throw errFactory.createError(ErrorType.DATASET_ALREADY_EXIST);
+      throw errFactory.createError(ErrorType.DATASET_MEMORY_EXIST);
     }
     await transaction.commit();
-    resFactory.send(res, ResponseType.UPLOAD_DATASET);
+    resFactory.send(res, ResponseType.DATASET_UPLOADED);
   } catch (error: any) {
     await transaction.rollback();
     sendError.send(res, error);
@@ -88,7 +89,13 @@ export async function updateDataset(req: any, res: any) {
       nameDataset,
       await user.getUserId(),
     );
+    const dir = `/usr/app/Datasets/${await user.getUsername()}/${nameDataset}`;
+    const newDir = `/usr/app/Datasets/${await user.getUsername()}/${newName}`;
     await dataset.updateDataset(newName, transaction);
+    if (fs.existsSync(newDir)) {
+      throw errFactory.createError(ErrorType.DATASET_MEMORY_EXIST);
+    }
+    fs.renameSync(dir, newDir);
     await transaction.commit();
     resFactory.send(res, ResponseType.DATASET_UPDATED);
   } catch (error: any) {
@@ -311,7 +318,7 @@ export async function addQueue(req: any, res: any) {
 }
 
 async function checkJobOwner(job: any, user: User) {
-  if ((await user.getUserId()) === job.data.user.id_user) {
+  if ((await user.getUserId()) === job.data.user.idUser) {
     return;
   } else {
     throw errFactory.createError(ErrorType.NOT_OWNER_JOB);

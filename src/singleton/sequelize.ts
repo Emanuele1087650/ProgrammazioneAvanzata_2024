@@ -1,7 +1,10 @@
 import { Sequelize } from 'sequelize';
+import { ErrorFactory, ErrorType } from '../factory/errFactory';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
+
+const errFactory = new ErrorFactory();
 
 /**
  * Classe 'SequelizeSingleton'
@@ -23,7 +26,7 @@ export class SequelizeDB {
       !process.env.DB_HOST ||
       !process.env.DB_PORT
     ) {
-      throw new Error('Missing environment variable');
+      throw errFactory.createError(ErrorType.MISSING_ENV_VARIABLE);
     }
 
     this.connection = new Sequelize(

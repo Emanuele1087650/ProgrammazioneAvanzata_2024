@@ -38,6 +38,17 @@ class Dataset extends Model {
   }
 
   async updateDataset(newName: string, transaction: Transaction) {
+    const dataset = await Dataset.findOne({
+      where: {
+        nameDataset: newName,
+        idCreator: this.idCreator,
+      },
+    }).catch(() => {
+      throw errorHandler.createError(ErrorType.INTERNAL_ERROR);
+    });
+    if (dataset) {
+      throw errorHandler.createError(ErrorType.DATASET_ALREADY_EXIST);
+    }
     const data = { nameDataset: newName };
     await this.update(data, {
       transaction,
@@ -53,6 +64,7 @@ Dataset.init(
       type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true,
+      field: "id_dataset",
     },
     cost: {
       type: DataTypes.REAL,
@@ -61,6 +73,7 @@ Dataset.init(
     nameDataset: {
       type: DataTypes.TEXT,
       allowNull: false,
+      field: "name_dataset",
     },
     idCreator: {
       type: DataTypes.INTEGER,
@@ -68,6 +81,7 @@ Dataset.init(
         model: User,
         key: 'idUser',
       },
+      field: "id_creator",
     },
   },
   {
@@ -115,6 +129,10 @@ async function getAllDataset(idUser: number) {
     where: {
       idCreator: idUser,
     },
+    attributes: [
+      'nameDataset',
+      'cost',
+    ],
   }).catch(() => {
     throw errorHandler.createError(ErrorType.INTERNAL_ERROR);
   });
