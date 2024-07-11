@@ -36,7 +36,7 @@ const inferenceWorker = new Worker(
         body: JSON.stringify({
           jobId: job.id,
           user: user.username,
-          name: dataset.name_dataset,
+          name: dataset.nameDataset,
           model,
           camDet,
           camCls,
@@ -62,13 +62,13 @@ const inferenceWorker = new Worker(
 export { inferenceQueue };
 
 inferenceWorker.on('completed', async (job) => {
-  const userId = job.data.user.id_user;
+  const userId = job.data.user.idUser;
 
   const userJobCount = await redis.incr(`user:${userId}:completedJobCount`);
 
   if (userJobCount > MAX_COMPLETED_JOBS_PER_USER) {
     const userJobs = await inferenceQueue.getJobs(['completed'], 0, -1, true);
-    const oldestUserJob = userJobs.find((j) => j.data.user.id_user === userId);
+    const oldestUserJob = userJobs.find((j) => j.data.user.idUser === userId);
     if (oldestUserJob) {
       await oldestUserJob.remove();
       await redis.decr(`user:${userId}:completedJobCount`);
@@ -78,7 +78,7 @@ inferenceWorker.on('completed', async (job) => {
 
 inferenceWorker.on('failed', async (job) => {
   const transaction = await SequelizeDB.getConnection().transaction();
-  const user: User = await getUserById(job?.data.user.id_user);
+  const user: User = await getUserById(job?.data.user.idUser)
   const dataset = job?.data.dataset;
   await user.addTokens(dataset.cost, transaction).catch(async () => {
     await transaction.rollback();

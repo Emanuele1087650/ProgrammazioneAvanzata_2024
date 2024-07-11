@@ -5,7 +5,7 @@ import { Dataset, createDataset, getAllDataset, getDatasetByName} from '../model
 import { inferenceQueue } from '../queue/worker';
 import { Job } from 'bullmq';
 import { Readable } from 'stream';
-import { User } from '../models/users';
+import { getUserByUsername, User } from '../models/users';
 import ffmpeg from 'fluent-ffmpeg';
 import AdmZip from 'adm-zip';
 import mime from 'mime-types';
@@ -386,7 +386,7 @@ export async function getTokens(req: any, res: any) {
 export async function recharge(req: any, res: any) {
   const transaction = await sequelize.transaction();
   try {
-    const user: User = req.user;
+    const user: User = await getUserByUsername(req.body.user);
     const tokens = req.body.tokens;
     await user.addTokens(tokens, transaction);
     transaction.commit();
