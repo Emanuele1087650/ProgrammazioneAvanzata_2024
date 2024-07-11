@@ -1,12 +1,12 @@
-import * as Authorization from "./authorization";
-import * as Validation from "./validation";
+import * as Authorization from './authorization';
+import * as Validation from './validation';
 
 export const AUTH = [
   Authorization.verifyHeader,
   Authorization.verifyToken,
   Authorization.verifyJWT,
   Authorization.verifyPayload,
-  Authorization.verifyUser
+  Authorization.verifyUser,
 ];
 
 export const ADMIN = [
@@ -26,7 +26,7 @@ export const UPDATE = [
 export const INFERENCE = [
   Validation.validateBody,
   Validation.validateInference,
-]
+];
 
 export const UPLOAD = [
   Validation.validateBody,

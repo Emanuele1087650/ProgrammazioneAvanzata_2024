@@ -1,5 +1,5 @@
 import * as dotenv from 'dotenv';
-import { Sequelize } from "sequelize";
+import { Sequelize } from 'sequelize';
 
 dotenv.config();
 
@@ -23,7 +23,7 @@ export class SequelizeDB {
       !process.env.DB_HOST ||
       !process.env.DB_PORT
     ) {
-      throw new Error("Missing environment variable");
+      throw new Error('Missing environment variable');
     }
 
     this.connection = new Sequelize(
@@ -33,12 +33,12 @@ export class SequelizeDB {
       {
         host: process.env.DB_HOST,
         port: Number(process.env.DB_PORT),
-        dialect: "postgres",
+        dialect: 'postgres',
         dialectOptions: {
           useUTC: false, // for reading from database
         },
         timezone: process.env.TZ,
-      }
+      },
     );
   }
 

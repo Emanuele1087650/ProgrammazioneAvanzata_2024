@@ -29,66 +29,68 @@ class User extends Model {
   }
 
   async updateBalance(new_balance: number, transaction: Transaction) {
-    const data = {tokens: new_balance}
+    const data = { tokens: new_balance };
     await this.update(data, {
-      transaction
+      transaction,
     }).catch(() => {
       throw errorHandler.createError(ErrorType.INTERNAL_ERROR);
     });
   }
 
   async addTokens(tokens: number, transaction: Transaction) {
-    const data = {tokens: this.tokens + tokens}
+    const data = { tokens: this.tokens + tokens };
     await this.update(data, {
-      transaction
+      transaction,
     }).catch(() => {
       throw errorHandler.createError(ErrorType.INTERNAL_ERROR);
     });
   }
 
   async removeTokens(tokens: number, transaction: Transaction) {
-    const data = {tokens: this.tokens - tokens}
+    const data = { tokens: this.tokens - tokens };
     await this.update(data, {
-      transaction
+      transaction,
     }).catch(() => {
       throw errorHandler.createError(ErrorType.INTERNAL_ERROR);
     });
   }
-
 }
 
-User.init({
-  id_user: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
-    primaryKey: true,
+User.init(
+  {
+    id_user: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    username: {
+      type: DataTypes.TEXT,
+      unique: true,
+      allowNull: false,
+    },
+    email: {
+      type: DataTypes.TEXT,
+      unique: true,
+      allowNull: false,
+    },
+    role: {
+      type: DataTypes.ENUM,
+      values: ['ADMIN', 'USER'],
+      defaultValue: 'USER',
+      allowNull: false,
+    },
+    tokens: {
+      type: DataTypes.REAL,
+      defaultValue: 10,
+    },
   },
-  username: {
-    type: DataTypes.TEXT,
-    unique: true,
-    allowNull: false,
+  {
+    sequelize,
+    tableName: 'users',
+    timestamps: false,
+    freezeTableName: true,
   },
-  email: {
-    type: DataTypes.TEXT,
-    unique: true,
-    allowNull: false,
-  },
-  role: {
-    type: DataTypes.ENUM,
-    values: ['ADMIN', 'USER'],
-    defaultValue: 'USER',
-    allowNull: false,
-  },
-  tokens: {
-    type: DataTypes.REAL,
-    defaultValue: 10,
-  },
-}, {
-  sequelize,
-  tableName: 'users',
-  timestamps: false,
-  freezeTableName: true,
-});
+);
 
 async function getUserById(id_user: number): Promise<User> {
   const user = await User.findByPk(id_user).catch(() => {

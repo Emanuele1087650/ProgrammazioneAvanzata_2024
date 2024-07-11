@@ -1,10 +1,10 @@
 import * as dotenv from 'dotenv';
-import express from "express";
-import { SequelizeDB } from "./singleton/sequelize";
-import * as Middleware from "./middlewares/middleware";
-import router from "./routes/router";
-import ErrorSender from "./utils/error_sender";
-import { ErrorFactory, ErrorType } from "./factory/errFactory";
+import express from 'express';
+import { SequelizeDB } from './singleton/sequelize';
+import * as Middleware from './middlewares/middleware';
+import router from './routes/router';
+import ErrorSender from './utils/error_sender';
+import { ErrorFactory, ErrorType } from './factory/errFactory';
 
 dotenv.config();
 
@@ -15,19 +15,19 @@ const sendError = new ErrorSender();
 const app = express();
 const port = process.env.API_PORT;
 
-app.use(express.json()); 
-app.use(Middleware.AUTH)
+app.use(express.json());
+app.use(Middleware.AUTH);
 app.use(router);
-app.use("*", (_req, res) => {
+app.use('*', (_req, res) => {
   const err = errFactory.createError(ErrorType.ROUTE_NOT_FOUND);
   sendError.send(res, err);
 });
 
-app.listen(port, () => { 
+app.listen(port, () => {
   console.log(`App in ascolto sulla porta ${port}...`);
   sequelize
-    .sync()
-    .then(() => {
-      console.log("Tabelle sincronizzate.");
-    })
+  .sync()
+  .then(() => {
+    console.log('Tabelle sincronizzate.');
+  });
 });
