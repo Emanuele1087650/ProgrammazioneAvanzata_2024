@@ -24,7 +24,7 @@ const inferenceQueue = new Queue('inferenceQueue', {
 const inferenceWorker = new Worker(
   'inferenceQueue',
   async (job: Job) => {
-    const { flag, user, dataset, model, cam_det, cam_cls } = job.data;
+    const { flag, user, dataset, model, camDet, camCls } = job.data;
     if (flag) {
       const response: Response = await fetch('http://cv:8000/inference', {
         method: 'POST',
@@ -32,12 +32,12 @@ const inferenceWorker = new Worker(
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          job_id: job.id,
-          user: user.use,
+          jobId: job.id,
+          user: user.username,
           name: dataset.name_dataset,
-          model: model,
-          cam_det: cam_det,
-          cam_cls: cam_cls,
+          model,
+          camDet,
+          camCls,
         }),
       }).catch(() => {
         throw errFactory.createError(ErrorType.INFERENCE_FAILED);

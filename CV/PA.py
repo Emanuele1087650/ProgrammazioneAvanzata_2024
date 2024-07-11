@@ -20,12 +20,12 @@ app = Flask(__name__)
 def inference():
     
     data = request.get_json() 
-    job_id = data["job_id"]
+    job_id = data["jobId"]
     user = data["user"]
     name_dataset = data["name"] 
     model = data["model"]
-    cam_detection = eval(data["cam_det"])
-    cam_cls = eval(data["cam_cls"])
+    cam_detection = eval(data["camDet"])
+    cam_cls = eval(data["camCls"])
 
     result_inference = []
     dataset=f"/usr/app/Datasets/{user}/{name_dataset}/"

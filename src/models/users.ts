@@ -6,14 +6,14 @@ const sequelize = SequelizeDB.getConnection();
 const errorHandler = new ErrorFactory();
 
 class User extends Model {
-  private id_user!: number;
+  private idUser!: number;
   private username!: string;
   private email!: string;
   private role!: 'ADMIN' | 'USER';
   private tokens!: number;
 
   async getUserId() {
-    return this.id_user;
+    return this.idUser;
   }
 
   async getUsername() {
@@ -26,15 +26,6 @@ class User extends Model {
 
   async getBalance() {
     return this.tokens;
-  }
-
-  async updateBalance(new_balance: number, transaction: Transaction) {
-    const data = { tokens: new_balance };
-    await this.update(data, {
-      transaction,
-    }).catch(() => {
-      throw errorHandler.createError(ErrorType.INTERNAL_ERROR);
-    });
   }
 
   async addTokens(tokens: number, transaction: Transaction) {
@@ -58,7 +49,7 @@ class User extends Model {
 
 User.init(
   {
-    id_user: {
+    idUser: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true,
@@ -92,8 +83,8 @@ User.init(
   },
 );
 
-async function getUserById(id_user: number): Promise<User> {
-  const user = await User.findByPk(id_user).catch(() => {
+async function getUserById(idUser: number): Promise<User> {
+  const user = await User.findByPk(idUser).catch(() => {
     throw errorHandler.createError(ErrorType.INTERNAL_ERROR);
   });
   if (!user) {

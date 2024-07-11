@@ -76,7 +76,7 @@ export class ResponseFactory {
   send(res: Response, type?: ResponseType, data?: any | Messages): void {
     if (type !== undefined) {
       const { code, status, message } = this.getResponse(type);
-      res.status(code).json({ status: status, message: message });
+      res.status(code).json({ status, message });
       return;
     }
     res.status(HttpStatusCode.OK).json(data);

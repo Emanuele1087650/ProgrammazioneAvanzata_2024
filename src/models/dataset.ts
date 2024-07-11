@@ -7,21 +7,21 @@ const sequelize = SequelizeDB.getConnection();
 const errorHandler = new ErrorFactory();
 
 class Dataset extends Model {
-  private id_dataset!: number;
+  private idDataset!: number;
   private cost!: number;
-  private name_dataset!: string;
-  private id_creator!: number;
+  private nameDataset!: string;
+  private idCreator!: number;
 
   async getCost() {
     return this.cost;
   }
 
   async getName() {
-    return this.name_dataset;
+    return this.nameDataset;
   }
 
-  async updateCost(new_cost: number, transaction: Transaction) {
-    const data = { cost: new_cost };
+  async updateCost(newCost: number, transaction: Transaction) {
+    const data = { cost: newCost };
     await this.update(data, {
       transaction,
     }).catch(() => {
@@ -37,8 +37,8 @@ class Dataset extends Model {
     });
   }
 
-  async updateDataset(new_name: string, transaction: Transaction) {
-    const data = { name_dataset: new_name };
+  async updateDataset(newName: string, transaction: Transaction) {
+    const data = { nameDataset: newName };
     await this.update(data, {
       transaction,
     }).catch(() => {
@@ -49,7 +49,7 @@ class Dataset extends Model {
 
 Dataset.init(
   {
-    id_dataset: {
+    idDataset: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true,
@@ -58,15 +58,15 @@ Dataset.init(
       type: DataTypes.REAL,
       defaultValue: 0,
     },
-    name_dataset: {
+    nameDataset: {
       type: DataTypes.TEXT,
       allowNull: false,
     },
-    id_creator: {
+    idCreator: {
       type: DataTypes.INTEGER,
       references: {
         model: User,
-        key: 'id_user',
+        key: 'idUser',
       },
     },
   },
@@ -88,18 +88,18 @@ async function createDataset(data: any, transaction: Transaction) {
     throw errorHandler.createError(ErrorType.DATASET_ALREADY_EXIST);
   } else {
     await Dataset.create(data, {
-      transaction: transaction,
+      transaction,
     }).catch(() => {
       throw errorHandler.createError(ErrorType.INTERNAL_ERROR);
     });
   }
 }
 
-async function getDatasetByName(name: string, id_user: number) {
+async function getDatasetByName(name: string, idUser: number) {
   const dataset = await Dataset.findOne({
     where: {
-      name_dataset: name,
-      id_creator: id_user,
+      nameDataset: name,
+      idCreator: idUser,
     },
   }).catch(() => {
     throw errorHandler.createError(ErrorType.INTERNAL_ERROR);
@@ -110,10 +110,10 @@ async function getDatasetByName(name: string, id_user: number) {
   return dataset;
 }
 
-async function getAllDataset(id_user: number) {
+async function getAllDataset(idUser: number) {
   const datasets = await Dataset.findAll({
     where: {
-      id_creator: id_user,
+      idCreator: idUser,
     },
   }).catch(() => {
     throw errorHandler.createError(ErrorType.INTERNAL_ERROR);

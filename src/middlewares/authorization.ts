@@ -75,7 +75,7 @@ export async function verifyUser(req: any, res: any, next: any) {
 export async function checkAdmin(req: any, res: any, next: any) {
   try {
     const user: User = req.user;
-    if (!user || (await user.getRole()) != 'ADMIN') {
+    if (!user || (await user.getRole()) !== 'ADMIN') {
       throw errFactory.createError(ErrorType.UNAUTHORIZED);
     } else next();
   } catch (err: any) {
