@@ -298,19 +298,24 @@ export async function getJob(req: any, res: any) {
       throw errFactory.createError(ErrorType.JOB_NOT_FOUND);
     }
     const { flag, user, dataset, model, cam_det, cam_cls } = job?.data;
-    if (!flag) {
-      resFactory.send(res, ResponseType.WORKER_ABORTED);
-    } else if (await job.isCompleted()) {
-      resFactory.send(res, undefined, {status: 'COMPLETED', results: await job.returnvalue});
-    } else if (await job.isFailed()) {
-      resFactory.send(res, ResponseType.WORKER_FAILED); 
-    } else if (await job.isActive()) {
-      resFactory.send(res, ResponseType.WORKER_RUNNING);
-    } else if (await job.isWaiting()) {
-      resFactory.send(res, ResponseType.WORKER_PENDING);
-    } else {
-      throw errFactory.createError(ErrorType.INTERNAL_ERROR);
+    if (user.id_user === req.user.id_user){
+      if (!flag) {
+        resFactory.send(res, ResponseType.WORKER_ABORTED);
+      } else if (await job.isCompleted()) {
+        resFactory.send(res, undefined, {status: 'COMPLETED', results: await job.returnvalue});
+      } else if (await job.isFailed()) {
+        resFactory.send(res, ResponseType.WORKER_FAILED); 
+      } else if (await job.isActive()) {
+        resFactory.send(res, ResponseType.WORKER_RUNNING);
+      } else if (await job.isWaiting()) {
+        resFactory.send(res, ResponseType.WORKER_PENDING);
+      } else {
+        throw errFactory.createError(ErrorType.INTERNAL_ERROR);
+      }
+    }else {
+      throw errFactory.createError(ErrorType.NOT_OWNER_JOB);
     }
+    
   } catch(error: any) {
     sendError.send(res, error);
   }

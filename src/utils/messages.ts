@@ -11,6 +11,7 @@ enum MESSAGES {
   INVALID_FORMAT = "The file format is invalid. Please use a supported file format.",
   NO_USER = "No users were found. Ensure that there are users in the system.",
   UPDATE_COST_FAILED = "Failed to update the cost. Please check the inputs and try again.",
+  NOT_OWNER_JOB = "You are not the owner of this job",
 
   ROUTE_NOT_FOUND = "The requested route was not found. Please check the URL and try again.",
   UNAUTHORIZED = "You are not authorized to access this resource. Please check your credentials.",

@@ -38,6 +38,7 @@ enum ErrorType {
     NO_USER,
     UPDATE_COST_FAILED,
     NO_HEADER_BEARER,
+    NOT_OWNER_JOB
 }
 
 class CustomError extends Error {
@@ -81,7 +82,8 @@ class ErrorFactory {
         [ErrorType.NOT_COMPLETED_JOB]: { code: HttpStatusCode.BAD_REQUEST, name: ErrorType[ErrorType.NOT_COMPLETED_JOB], message: Messages.NOT_COMPLETED_JOB },
         [ErrorType.NO_USER]: { code: HttpStatusCode.BAD_REQUEST, name: ErrorType[ErrorType.NO_USER], message: Messages.NO_USER },
         [ErrorType.UPDATE_COST_FAILED]: { code: HttpStatusCode.BAD_REQUEST, name: ErrorType[ErrorType.UPDATE_COST_FAILED], message: Messages.UPDATE_COST_FAILED },
-        [ErrorType.NO_HEADER_BEARER]: { code: HttpStatusCode.BAD_REQUEST, name: ErrorType[ErrorType.NO_HEADER_BEARER], message: Messages.NO_HEADER_BEARER }
+        [ErrorType.NO_HEADER_BEARER]: { code: HttpStatusCode.BAD_REQUEST, name: ErrorType[ErrorType.NO_HEADER_BEARER], message: Messages.NO_HEADER_BEARER },
+        [ErrorType.NOT_OWNER_JOB]: { code: HttpStatusCode.BAD_REQUEST, name: ErrorType[ErrorType.NOT_OWNER_JOB], message: Messages.NOT_OWNER_JOB }
     };
 
     createError(type: ErrorType): CustomError {
