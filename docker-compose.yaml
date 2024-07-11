@@ -3,7 +3,7 @@ services:
   cache:
     image: redis
     ports:
-      - 6379:6379
+      - 6379:${REDIS_PORT}
     restart: always
   db:
     image: postgres
@@ -15,13 +15,13 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASS}
     ports:
-      - 5432:5432
+      - 5432:${DB_PORT}
     volumes:
-      - ./scripts/seed.sql:/docker-entrypoint-initdb.d/seed.sql
+      - ./seed/seed.sql:/docker-entrypoint-initdb.d/seed.sql
   cv:
     build: ./CV
     ports:
-      - 8000:8000
+      - 8000:${CV_PORT}
     restart: always
     volumes:
       - ./CV:/usr/app/src
@@ -29,7 +29,7 @@ services:
   app:
     build: ./
     ports:
-      - "3000:3000"
+      - 3000:${API_PORT}
     depends_on:
       - db
       - cv
@@ -45,7 +45,6 @@ services:
       JWT_KEY: ${JWT_KEY}
       REDIS_HOST: cache
       REDIS_PORT: ${REDIS_PORT}
-      TTL: ${TTL}
     volumes:
       - ./src:/usr/app/src
       - shared_volume:/usr/app/Datasets

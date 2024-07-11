@@ -79,12 +79,12 @@ Dataset.init(
 );
 
 async function createDataset(data: any, transaction: Transaction) {
-  const datasets = await Dataset.findAll({
+  const datasets = await Dataset.findOne({
     where: data,
   }).catch(() => {
     throw errorHandler.createError(ErrorType.INTERNAL_ERROR);
   });
-  if (datasets.length !== 0) {
+  if (datasets) {
     throw errorHandler.createError(ErrorType.DATASET_ALREADY_EXIST);
   } else {
     await Dataset.create(data, {
