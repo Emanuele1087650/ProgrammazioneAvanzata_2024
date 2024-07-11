@@ -4,10 +4,10 @@ import ErrorSender from "../utils/error_sender";
 const errFactory = new ErrorFactory();
 const sendError = new ErrorSender();
 
-function validateRequiredKeys(dataset: any, requiredKeys: string[], res: any): boolean {
-    const datasetKeys = Object.keys(dataset);
-    const hasAllRequiredKeys = requiredKeys.every(key => datasetKeys.includes(key));
-    const hasExactKeys = datasetKeys.length === requiredKeys.length;
+function validateRequiredKeys(body: any, requiredKeys: string[], res: any): boolean {
+    const bodyKeys = Object.keys(body);
+    const hasAllRequiredKeys = requiredKeys.every(key => bodyKeys.includes(key));
+    const hasExactKeys = bodyKeys.length === requiredKeys.length;
     if (!hasAllRequiredKeys || !hasExactKeys) {
         const error = errFactory.createError(ErrorType.INVALID_BODY);
         sendError.send(res, error);
@@ -16,8 +16,8 @@ function validateRequiredKeys(dataset: any, requiredKeys: string[], res: any): b
     return true;
 }
 
-function validateStringKeys(dataset: any, requiredKeys: string[], res: any): boolean {
-    const areValuesValid = requiredKeys.every(key => typeof dataset[key] === 'string' && dataset[key].trim() !== '');
+function validateStringKeys(body: any, requiredKeys: string[], res: any): boolean {
+    const areValuesValid = requiredKeys.every(key => typeof body[key] === 'string' && body[key].trim() !== '');
     if (!areValuesValid) {
         const error = errFactory.createError(ErrorType.INVALID_BODY);
         sendError.send(res, error);
@@ -26,8 +26,8 @@ function validateStringKeys(dataset: any, requiredKeys: string[], res: any): boo
     return true;
 }
 
-function validateNumberKeys(dataset: any, requiredKeys: string[], res: any): boolean {
-    const areValuesValid = requiredKeys.every(key => typeof dataset[key] === 'number' && dataset[key] >= 0);
+function validateNumberKeys(body: any, requiredKeys: string[], res: any): boolean {
+    const areValuesValid = requiredKeys.every(key => typeof body[key] === 'number' && body[key] >= 0);
     if (!areValuesValid) {
         const error = errFactory.createError(ErrorType.INVALID_BODY);
         sendError.send(res, error);
@@ -37,9 +37,9 @@ function validateNumberKeys(dataset: any, requiredKeys: string[], res: any): boo
 }
 
 export function validateBody(req: any, res: any, next: any): void {
-    const dataset = req.body;
-    const datasetKeys = Object.keys(dataset);
-    if (datasetKeys.length === 0) {
+    const body = req.body;
+    const bodyKeys = Object.keys(body);
+    if (bodyKeys.length === 0) {
         const error = errFactory.createError(ErrorType.MISSING_BODY);
         sendError.send(res, error);
         return;

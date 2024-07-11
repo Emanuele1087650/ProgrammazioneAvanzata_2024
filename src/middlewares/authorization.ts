@@ -1,6 +1,6 @@
 require("dotenv").config();
 import jwt from "jsonwebtoken";
-import { getUserByUsername } from "../models/users";
+import { getUserByUsername, User } from "../models/users";
 import { ErrorFactory, ErrorType } from "../factory/errFactory";
 import ErrorSender from "../utils/error_sender";
 
@@ -65,7 +65,7 @@ export function verifyPayload(req: any, res: any, next: any): void {
 
 export async function verifyUser(req: any, res: any, next: any) {
   try {
-    const user = await getUserByUsername(req.username);
+    const user: User = await getUserByUsername(req.username);
     if (!user) {
       throw errFactory.createError(ErrorType.NO_USER);
     }
@@ -78,7 +78,8 @@ export async function verifyUser(req: any, res: any, next: any) {
 
 export async function checkAdmin(req: any, res: any, next: any) {
   try {
-    if (!req.user || req.user.role != "ADMIN") {
+    const user: User = req.user;
+    if (!user || await user.getRole() != "ADMIN") {
       throw errFactory.createError(ErrorType.UNAUTHORIZED);
     } else
       next();
