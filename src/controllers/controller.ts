@@ -233,7 +233,8 @@ export async function upload(req: any, res: any) {
 
       const dataset_cost = await dataset.getCost();
 
-      await user.updateBalance(user.tokens - upload_cost, transaction);
+      //await user.updateBalance(user.tokens - upload_cost, transaction);
+      await user.removeTokens(upload_cost, transaction);
       await dataset.updateCost(dataset_cost + inference_cost, transaction2);
 
       for (const file of files){
@@ -267,7 +268,8 @@ export async function addQueue(req: any, res: any) {
     let flag: boolean;
     const dataset_cost = await dataset.getCost();
     if (user.tokens >= dataset_cost) {
-      await user.updateBalance(user.tokens - dataset_cost, transaction);
+      //await user.updateBalance(user.tokens - dataset_cost, transaction);
+      await user.removeTokens(dataset_cost, transaction);
       await transaction.commit();
       flag = true;
     } else {
@@ -349,7 +351,8 @@ export async function recharge(req: any, res: any) {
   try{
     const user = req.user;
     const tokens = req.body["tokens"];
-    await user.updateBalance(user.tokens + tokens, transaction)
+    //await user.updateBalance(user.tokens + tokens, transaction)
+    await user.addTokens(tokens, transaction)
     transaction.commit();
     resFactory.send(res, ResponseType.RECHARGED);
   } catch(error: any) {

@@ -74,7 +74,12 @@ inferenceWorker.on('failed', async (job) => {
   const transaction = await SequelizeDB.getConnection().transaction();
   const user = job?.data.user;
   const dataset = job?.data.dataset;
+  /*
   await user.updateBalance(user.tokens + dataset.cost, transaction).catch(async () => {
+    await transaction.rollback();
+  });
+  */
+  await user.addTokens(dataset.cost, transaction).catch(async () => {
     await transaction.rollback();
   });
   await transaction.commit();

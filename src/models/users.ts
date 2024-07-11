@@ -24,7 +24,25 @@ class User extends Model {
       throw errorHandler.createError(ErrorType.INTERNAL_ERROR);
     });
   }
-  
+
+  async addTokens(tokens: number, transaction: Transaction) {
+    const data = {tokens: this.tokens + tokens}
+    await this.update(data, {
+      transaction
+    }).catch(() => {
+      throw errorHandler.createError(ErrorType.INTERNAL_ERROR);
+    });
+  }
+
+  async removeTokens(tokens: number, transaction: Transaction) {
+    const data = {tokens: this.tokens - tokens}
+    await this.update(data, {
+      transaction
+    }).catch(() => {
+      throw errorHandler.createError(ErrorType.INTERNAL_ERROR);
+    });
+  }
+
 }
 
 User.init({
