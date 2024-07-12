@@ -9,6 +9,13 @@ dotenv.config();
 const errFactory = new ErrorFactory();
 const sendError = new ErrorSender();
 
+/**
+ * Middleware to verify if the authorization header is present.
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @param {Function} next - The next middleware function.
+ * @returns {void}
+ */
 export function verifyHeader(req: any, res: any, next: any): void {
   try {
     if (req.headers.authorization) next();
@@ -18,6 +25,14 @@ export function verifyHeader(req: any, res: any, next: any): void {
   }
 }
 
+/**
+ * Middleware to verify the structure of the authorization header.
+ * Extracts the token if the header is in the format 'Bearer token'.
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @param {Function} next - The next middleware function.
+ * @returns {void}
+ */
 export function verifyToken(req: any, res: any, next: any): void {
   try {
     const bearerHeader: string = req.headers.authorization;
@@ -31,6 +46,14 @@ export function verifyToken(req: any, res: any, next: any): void {
   }
 }
 
+/**
+ * Middleware to verify the JSON Web Token (JWT).
+ * Decodes the JWT and extracts the username.
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @param {Function} next - The next middleware function.
+ * @returns {void}
+ */
 export function verifyJWT(req: any, res: any, next: any): void {
   try {
     const jwtKey = process.env.JWT_KEY;
@@ -49,6 +72,14 @@ export function verifyJWT(req: any, res: any, next: any): void {
   }
 }
 
+/**
+ * Middleware to verify if the request payload is present.
+ * Parses the payload and attaches it to the request object.
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @param {Function} next - The next middleware function.
+ * @returns {void}
+ */
 export function verifyPayload(req: any, res: any, next: any): void {
   try {
     req.body = JSON.parse(JSON.stringify(req.body));
@@ -59,6 +90,14 @@ export function verifyPayload(req: any, res: any, next: any): void {
   }
 }
 
+/**
+ * Middleware to verify if the user exists in the database.
+ * Fetches the user by username and attaches it to the request object.
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @param {Function} next - The next middleware function.
+ * @returns {Promise<void>}
+ */
 export async function verifyUser(req: any, res: any, next: any) {
   try {
     const user: User = await getUserByUsername(req.username);
@@ -72,6 +111,14 @@ export async function verifyUser(req: any, res: any, next: any) {
   }
 }
 
+/**
+ * Middleware to check if the user has an admin role.
+ * Verifies the user's role and proceeds if the user is an admin.
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @param {Function} next - The next middleware function.
+ * @returns {Promise<void>}
+ */
 export async function checkAdmin(req: any, res: any, next: any) {
   try {
     const user: User = req.user;
