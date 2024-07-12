@@ -277,7 +277,6 @@ async function extractFramesFromVideo(videoBuffer: Buffer) {
  */
 export async function upload(req: any, res: any) {
   const transaction = await sequelize.transaction();
-  const transaction2 = await sequelize.transaction();
 
   try {
     const datasetName = req.body.name;
@@ -330,16 +329,14 @@ export async function upload(req: any, res: any) {
     const datasetCost = await dataset.getCost();
 
     await user.removeTokens(uploadCost, transaction);
-    await dataset.updateCost(datasetCost + inferenceCost, transaction2);
+    await dataset.updateCost(datasetCost + inferenceCost, transaction);
     for (const file of files) {
       await saveFile(dir, file);
     }
     await transaction.commit();
-    await transaction2.commit();
     resFactory.send(res, ResponseType.UPLOADED);
   } catch (error: any) {
     await transaction.rollback();
-    await transaction2.rollback();
     sendError.send(res, error);
   }
 }
