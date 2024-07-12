@@ -23,6 +23,12 @@ const inferenceQueue = new Queue('inferenceQueue', {
 
 const inferenceWorker = new Worker(
   'inferenceQueue',
+  /**
+   * Processes a job from the inference queue.
+   * 
+   * @param {Job} job - The job to process.
+   * @returns {Promise<Object|null>} The result of the inference or null.
+   */
   async (job: Job) => {
     const { flag, user, dataset, model, camDet, camCls } = job.data;
     if (flag) {
@@ -61,27 +67,43 @@ const inferenceWorker = new Worker(
 
 export { inferenceQueue };
 
-inferenceWorker.on('completed', async (job) => {
-  const userId = job.data.user.idUser;
+inferenceWorker.on('completed',
+  /**
+  * Handles the 'completed' event of the inference worker.
+  * 
+  * @param {Job} job - The completed job.
+  * @returns {Promise<void>}
+  */
+  async (job) => {
+    const userId = job.data.user.idUser;
 
-  const userJobCount = await redis.incr(`user:${userId}:completedJobCount`);
+    const userJobCount = await redis.incr(`user:${userId}:completedJobCount`);
 
-  if (userJobCount > MAX_COMPLETED_JOBS_PER_USER) {
-    const userJobs = await inferenceQueue.getJobs(['completed'], 0, -1, true);
-    const oldestUserJob = userJobs.find((j) => j.data.user.idUser === userId);
-    if (oldestUserJob) {
-      await oldestUserJob.remove();
-      await redis.decr(`user:${userId}:completedJobCount`);
+    if (userJobCount > MAX_COMPLETED_JOBS_PER_USER) {
+      const userJobs = await inferenceQueue.getJobs(['completed'], 0, -1, true);
+      const oldestUserJob = userJobs.find((j) => j.data.user.idUser === userId);
+      if (oldestUserJob) {
+        await oldestUserJob.remove();
+        await redis.decr(`user:${userId}:completedJobCount`);
+      }
     }
   }
-});
+);
 
-inferenceWorker.on('failed', async (job) => {
-  const transaction = await SequelizeDB.getConnection().transaction();
-  const user: User = await getUserById(job?.data.user.idUser)
-  const dataset = job?.data.dataset;
-  await user.addTokens(dataset.cost, transaction).catch(async () => {
-    await transaction.rollback();
-  });
-  await transaction.commit();
-});
+inferenceWorker.on('failed',
+  /**
+ * Handles the 'failed' event of the inference worker.
+ * 
+ * @param {Job} job - The failed job.
+ * @returns {Promise<void>}
+ */
+  async (job) => {
+    const transaction = await SequelizeDB.getConnection().transaction();
+    const user: User = await getUserById(job?.data.user.idUser)
+    const dataset = job?.data.dataset;
+    await user.addTokens(dataset.cost, transaction).catch(async () => {
+      await transaction.rollback();
+    });
+    await transaction.commit();
+  }
+);

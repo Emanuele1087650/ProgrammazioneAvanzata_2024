@@ -9,10 +9,10 @@ interface GoodResponse {
 }
 
 export enum ResponseType {
-  DATASET_UPLOADED,
-  DATASET_DELETED,
-  DATASET_UPDATED,
-  FILE_UPLOADED,
+  CREATED,
+  DELETED,
+  UPDATED,
+  UPLOADED,
   FAILED,
   ABORTED,
   RUNNING,
@@ -22,24 +22,24 @@ export enum ResponseType {
 
 export class ResponseFactory {
   private responseMap: Record<ResponseType, GoodResponse> = {
-    [ResponseType.DATASET_UPLOADED]: {
+    [ResponseType.CREATED]: {
       code: HttpStatusCode.OK,
-      status: ResponseType[ResponseType.DATASET_UPLOADED],
+      status: ResponseType[ResponseType.CREATED],
       message: Messages.UPLOAD_DATASET,
     },
-    [ResponseType.DATASET_DELETED]: {
+    [ResponseType.DELETED]: {
       code: HttpStatusCode.OK,
-      status: ResponseType[ResponseType.DATASET_DELETED],
+      status: ResponseType[ResponseType.DELETED],
       message: Messages.DATASET_DELETED,
     },
-    [ResponseType.DATASET_UPDATED]: {
+    [ResponseType.UPDATED]: {
       code: HttpStatusCode.OK,
-      status: ResponseType[ResponseType.DATASET_UPDATED],
+      status: ResponseType[ResponseType.UPDATED],
       message: Messages.DATASET_UPDATED,
     },
-    [ResponseType.FILE_UPLOADED]: {
+    [ResponseType.UPLOADED]: {
       code: HttpStatusCode.OK,
-      status: ResponseType[ResponseType.FILE_UPLOADED],
+      status: ResponseType[ResponseType.UPLOADED],
       message: Messages.FILE_UPLOADED,
     },
     [ResponseType.FAILED]: {

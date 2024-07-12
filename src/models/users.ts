@@ -5,6 +5,12 @@ import { ErrorFactory, ErrorType } from '../factory/errFactory';
 const sequelize = SequelizeDB.getConnection();
 const errorHandler = new ErrorFactory();
 
+/**
+ * Represents a User.
+ * 
+ * @class
+ * @extends {Model}
+ */
 class User extends Model {
   private idUser!: number;
   private username!: string;
@@ -12,22 +18,49 @@ class User extends Model {
   private role!: 'ADMIN' | 'USER';
   private tokens!: number;
 
+  /**
+   * Gets the ID of the user.
+   * 
+   * @returns {Promise<number>} The ID of the user.
+   */
   async getUserId() {
     return this.idUser;
   }
 
+  /**
+   * Gets the username of the user.
+   * 
+   * @returns {Promise<string>} The username of the user.
+   */
   async getUsername() {
     return this.username;
   }
 
+  /**
+   * Gets the role of the user.
+   * 
+   * @returns {Promise<string>} The role of the user.
+   */
   async getRole() {
     return this.role;
   }
 
+  /**
+   * Gets the balance of tokens of the user.
+   * 
+   * @returns {Promise<number>} The balance of tokens.
+   */
   async getBalance() {
     return this.tokens;
   }
 
+  /**
+   * Adds tokens to the user's balance.
+   * 
+   * @param {number} tokens - The number of tokens to add.
+   * @param {Transaction} transaction - The transaction object.
+   * @returns {Promise<void>}
+   */
   async addTokens(tokens: number, transaction: Transaction) {
     const data = { tokens: this.tokens + tokens };
     await this.update(data, {
@@ -37,6 +70,13 @@ class User extends Model {
     });
   }
 
+  /**
+   * Removes tokens from the user's balance.
+   * 
+   * @param {number} tokens - The number of tokens to remove.
+   * @param {Transaction} transaction - The transaction object.
+   * @returns {Promise<void>}
+   */
   async removeTokens(tokens: number, transaction: Transaction) {
     const data = { tokens: this.tokens - tokens };
     await this.update(data, {
@@ -84,6 +124,12 @@ User.init(
   },
 );
 
+/**
+ * Gets a user by their ID.
+ * 
+ * @param {number} idUser - The ID of the user.
+ * @returns {Promise<User>} The user.
+ */
 async function getUserById(idUser: number): Promise<User> {
   const user = await User.findByPk(idUser).catch(() => {
     throw errorHandler.createError(ErrorType.INTERNAL_ERROR);
@@ -94,6 +140,12 @@ async function getUserById(idUser: number): Promise<User> {
   return user;
 }
 
+/**
+ * Gets a user by their username.
+ * 
+ * @param {string} username - The username of the user.
+ * @returns {Promise<User>} The user.
+ */
 async function getUserByUsername(username: string): Promise<User> {
   const user = await User.findOne({
     where: { username },
@@ -106,6 +158,11 @@ async function getUserByUsername(username: string): Promise<User> {
   return user;
 }
 
+/**
+ * Gets all users.
+ * 
+ * @returns {Promise<User[]>} The list of users.
+ */
 async function getAllUsers() {
   const users = await User.findAll().catch(() => {
     throw errorHandler.createError(ErrorType.INTERNAL_ERROR);

@@ -6,20 +6,43 @@ import { ErrorFactory, ErrorType } from '../factory/errFactory';
 const sequelize = SequelizeDB.getConnection();
 const errorHandler = new ErrorFactory();
 
+/**
+ * Represents a Dataset.
+ * 
+ * @class
+ * @extends {Model}
+ */
 class Dataset extends Model {
   private idDataset!: number;
   private cost!: number;
   private nameDataset!: string;
   private idCreator!: number;
 
+  /**
+   * Gets the cost of the dataset.
+   * 
+   * @returns {Promise<number>} The cost of the dataset.
+   */
   async getCost() {
     return this.cost;
   }
 
+  /**
+   * Gets the name of the dataset.
+   * 
+   * @returns {Promise<string>} The name of the dataset.
+   */
   async getName() {
     return this.nameDataset;
   }
 
+  /**
+   * Updates the cost of the dataset.
+   * 
+   * @param {number} newCost - The new cost of the dataset.
+   * @param {Transaction} transaction - The transaction object.
+   * @returns {Promise<void>}
+   */
   async updateCost(newCost: number, transaction: Transaction) {
     const data = { cost: newCost };
     await this.update(data, {
@@ -29,6 +52,12 @@ class Dataset extends Model {
     });
   }
 
+  /**
+   * Deletes the dataset.
+   * 
+   * @param {Transaction} transaction - The transaction object.
+   * @returns {Promise<void>}
+   */
   async deleteDataset(transaction: Transaction) {
     await this.destroy({
       transaction,
@@ -37,6 +66,13 @@ class Dataset extends Model {
     });
   }
 
+  /**
+   * Updates the name of the dataset.
+   * 
+   * @param {string} newName - The new name of the dataset.
+   * @param {Transaction} transaction - The transaction object.
+   * @returns {Promise<void>}
+   */
   async updateDataset(newName: string, transaction: Transaction) {
     const dataset = await Dataset.findOne({
       where: {
@@ -92,6 +128,15 @@ Dataset.init(
   },
 );
 
+/**
+ * Creates a new dataset.
+ * 
+ * @param {Object} data - The dataset data.
+ * @param {string} data.nameDataset - The name of the dataset.
+ * @param {number} data.idCreator - The ID of the creator.
+ * @param {Transaction} transaction - The transaction object.
+ * @returns {Promise<void>}
+ */
 async function createDataset(data: any, transaction: Transaction) {
   const datasets = await Dataset.findOne({
     where: data,
@@ -109,6 +154,13 @@ async function createDataset(data: any, transaction: Transaction) {
   }
 }
 
+/**
+ * Gets a dataset by its name.
+ * 
+ * @param {string} name - The name of the dataset.
+ * @param {number} idUser - The ID of the user.
+ * @returns {Promise<Dataset>} The dataset.
+ */
 async function getDatasetByName(name: string, idUser: number) {
   const dataset = await Dataset.findOne({
     where: {
@@ -124,6 +176,12 @@ async function getDatasetByName(name: string, idUser: number) {
   return dataset;
 }
 
+/**
+ * Gets all datasets for a user.
+ * 
+ * @param {number} idUser - The ID of the user.
+ * @returns {Promise<Dataset[]>} The list of datasets.
+ */
 async function getAllDataset(idUser: number) {
   const datasets = await Dataset.findAll({
     where: {

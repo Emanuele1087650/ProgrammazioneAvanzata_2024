@@ -21,6 +21,13 @@ const resFactory = new ResponseFactory();
 const errFactory = new ErrorFactory();
 const sequelize = SequelizeDB.getConnection();
 
+/**
+ * Retrieves all datasets for the authenticated user.
+ * 
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @returns {Promise<void>}
+ */
 export async function getAllDatasets(req: any, res: any) {
   const user: User = req.user;
   try {
@@ -34,6 +41,13 @@ export async function getAllDatasets(req: any, res: any) {
   }
 }
 
+/**
+ * Creates a new dataset for the authenticated user.
+ * 
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @returns {Promise<void>}
+ */
 export async function createDatasets(req: any, res: any) {
   const transaction = await sequelize.transaction();
   try {
@@ -53,13 +67,20 @@ export async function createDatasets(req: any, res: any) {
       throw errFactory.createError(ErrorType.DATASET_MEMORY_EXIST);
     }
     await transaction.commit();
-    resFactory.send(res, ResponseType.DATASET_UPLOADED);
+    resFactory.send(res, ResponseType.CREATED);
   } catch (error: any) {
     await transaction.rollback();
     sendError.send(res, error);
   }
 }
 
+/**
+ * Deletes a dataset for the authenticated user.
+ * 
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @returns {Promise<void>}
+ */
 export async function deleteDataset(req: any, res: any) {
   const transaction = await sequelize.transaction();
   try {
@@ -71,13 +92,20 @@ export async function deleteDataset(req: any, res: any) {
     );
     await dataset.deleteDataset(transaction);
     await transaction.commit();
-    resFactory.send(res, ResponseType.DATASET_DELETED);
+    resFactory.send(res, ResponseType.DELETED);
   } catch (error: any) {
     await transaction.rollback();
     sendError.send(res, error);
   }
 }
 
+/**
+ * Updates a dataset's name for the authenticated user.
+ * 
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @returns {Promise<void>}
+ */
 export async function updateDataset(req: any, res: any) {
   const transaction = await sequelize.transaction();
   try {
@@ -96,20 +124,32 @@ export async function updateDataset(req: any, res: any) {
     }
     fs.renameSync(dir, newDir);
     await transaction.commit();
-    resFactory.send(res, ResponseType.DATASET_UPDATED);
+    resFactory.send(res, ResponseType.UPDATED);
   } catch (error: any) {
     await transaction.rollback();
     sendError.send(res, error);
   }
 }
 
-async function createUniqueName(originalName: any) {
+/**
+ * Creates a unique name by appending a timestamp to the original name.
+ * 
+ * @param {string} originalName - The original name of the file.
+ * @returns {Promise<string>}
+ */
+async function createUniqueName(originalName: string) {
   const baseName = originalName.replace(/\.[^/.]+$/, '');
   const timestamp = Date.now();
   return `${baseName}-${timestamp}`;
 }
 
-async function countAndVerifyZip(zipBuffer: any) {
+/**
+ * Counts and verifies the contents of a zip file.
+ * 
+ * @param {Buffer} zipBuffer - The buffer of the zip file.
+ * @returns {Promise<Object>} An object containing the counts of images and videos.
+ */
+async function countAndVerifyZip(zipBuffer: Buffer) {
   const zip = new AdmZip(zipBuffer);
   const zipEntries = zip.getEntries();
   let imgCount = 0;
@@ -134,7 +174,14 @@ async function countAndVerifyZip(zipBuffer: any) {
   return { videoCount, imgCount };
 }
 
-async function extractZip(zipBuffer: any, dir: any) {
+/**
+ * Extracts the contents of a zip file to a directory.
+ * 
+ * @param {Buffer} zipBuffer - The buffer of the zip file.
+ * @param {string} dir - The directory to extract the files to.
+ * @returns {Promise<void>}
+ */
+async function extractZip(zipBuffer: Buffer, dir: string) {
   const zip = new AdmZip(zipBuffer);
   const zipEntries = zip.getEntries();
 
@@ -158,6 +205,13 @@ async function extractZip(zipBuffer: any, dir: any) {
   return;
 }
 
+/**
+ * Saves a file to a directory.
+ * 
+ * @param {string} dir - The directory to save the file to.
+ * @param {Object} file - The file to save.
+ * @returns {Promise<void>}
+ */
 async function saveFile(dir: any, file: any) {
   if (file.mimetype === 'video/mp4') {
     const fileName = await createUniqueName(file.originalname);
@@ -174,7 +228,13 @@ async function saveFile(dir: any, file: any) {
   }
 }
 
-async function countFrame(buffer: any) {
+/**
+ * Counts the number of frames in a video.
+ * 
+ * @param {Buffer} buffer - The buffer of the video.
+ * @returns {Promise<number>}
+ */
+async function countFrame(buffer: Buffer) {
   const command = await extractFramesFromVideo(buffer);
   let frameCount = 0;
   return new Promise<number>((resolve, reject) => {
@@ -194,7 +254,13 @@ async function countFrame(buffer: any) {
   });
 }
 
-async function extractFramesFromVideo(videoBuffer: any) {
+/**
+ * Extracts frames from a video buffer.
+ * 
+ * @param {Buffer} videoBuffer - The buffer of the video.
+ * @returns {Promise<any>} The ffmpeg command.
+ */
+async function extractFramesFromVideo(videoBuffer: Buffer) {
   const videoStream = new Readable();
   videoStream.push(videoBuffer);
   videoStream.push(null);
@@ -202,6 +268,13 @@ async function extractFramesFromVideo(videoBuffer: any) {
   return command;
 }
 
+/**
+ * Uploads files to a dataset.
+ * 
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @returns {Promise<void>}
+ */
 export async function upload(req: any, res: any) {
   const transaction = await sequelize.transaction();
   const transaction2 = await sequelize.transaction();
@@ -263,7 +336,7 @@ export async function upload(req: any, res: any) {
     }
     await transaction.commit();
     await transaction2.commit();
-    resFactory.send(res, ResponseType.FILE_UPLOADED);
+    resFactory.send(res, ResponseType.UPLOADED);
   } catch (error: any) {
     await transaction.rollback();
     await transaction2.rollback();
@@ -271,6 +344,13 @@ export async function upload(req: any, res: any) {
   }
 }
 
+/**
+ * Adds an inference job to the queue.
+ * 
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @returns {Promise<void>}
+ */
 export async function addQueue(req: any, res: any) {
   const transaction = await sequelize.transaction();
   try {
@@ -316,6 +396,13 @@ export async function addQueue(req: any, res: any) {
   }
 }
 
+/**
+ * Checks if the authenticated user is the owner of the job.
+ * 
+ * @param {Job} job - The job to check.
+ * @param {User} user - The authenticated user.
+ * @returns {Promise<void>}
+ */
 async function checkJobOwner(job: any, user: User) {
   if ((await user.getUserId()) === job.data.user.idUser) {
     return;
@@ -324,6 +411,13 @@ async function checkJobOwner(job: any, user: User) {
   }
 }
 
+/**
+ * Retrieves the status of a job.
+ * 
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @returns {Promise<void>}
+ */
 export async function getJob(req: any, res: any) {
   try {
     const jobId = req.body.jobId;
@@ -354,6 +448,13 @@ export async function getJob(req: any, res: any) {
   }
 }
 
+/**
+ * Retrieves the results of a completed job.
+ * 
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @returns {Promise<void>}
+ */
 export async function getResults(req: any, res: any) {
   const jobId = req.body.jobId;
   try {
@@ -376,12 +477,26 @@ export async function getResults(req: any, res: any) {
   }
 }
 
+/**
+ * Retrieves the token balance for the authenticated user.
+ * 
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @returns {Promise<void>}
+ */
 export async function getTokens(req: any, res: any) {
   const user: User = req.user;
   const tokens = await user.getBalance();
   resFactory.send(res, undefined, { tokens });
 }
 
+/**
+ * Recharges the token balance for a user.
+ * 
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @returns {Promise<void>}
+ */
 export async function recharge(req: any, res: any) {
   const transaction = await sequelize.transaction();
   try {
