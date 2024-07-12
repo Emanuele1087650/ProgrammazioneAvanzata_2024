@@ -157,7 +157,7 @@ async function countAndVerifyZip(zipBuffer: Buffer) {
 
   for (const zipEntry of zipEntries) {
     if (zipEntry.isDirectory) {
-      throw errFactory.createError(ErrorType.BAD_REQUEST);
+      throw errFactory.createError(ErrorType.INVALID_ZIP_FILE);
     }
 
     const mimetype = mime.lookup(zipEntry.entryName);
@@ -168,7 +168,7 @@ async function countAndVerifyZip(zipBuffer: Buffer) {
       const buffer = zipEntry.getData();
       videoCount += await countFrame(buffer);
     } else {
-      throw errFactory.createError(ErrorType.BAD_REQUEST);
+      throw errFactory.createError(ErrorType.INVALID_ZIP_FILE);
     }
   }
   return { videoCount, imgCount };
@@ -199,7 +199,7 @@ async function extractZip(zipBuffer: Buffer, dir: string) {
       const command = await extractFramesFromVideo(buffer);
       command.save(`${dir}/${fileName}-%03d.png`);
     } else {
-      throw errFactory.createError(ErrorType.BAD_REQUEST);
+      throw errFactory.createError(ErrorType.INVALID_ZIP_FILE);
     }
   }
   return;
@@ -224,7 +224,7 @@ async function saveFile(dir: any, file: any) {
     const filePath = path.join(dir, `${fileName}.jpg`);
     fs.writeFileSync(filePath, file.buffer);
   } else {
-    throw errFactory.createError(ErrorType.BAD_REQUEST);
+    throw errFactory.createError(ErrorType.INVALID_FORMAT);
   }
 }
 

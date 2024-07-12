@@ -8,7 +8,7 @@ class ErrorSender {
       res.status(err.code).json({ type: err.name, message: err.message });
     else
       res
-        .status(HttpStatusCode.BAD_REQUEST)
+        .status(HttpStatusCode.INTERNAL_SERVER_ERROR)
         .json({ type: err.name, message: err.message });
     return;
   }
