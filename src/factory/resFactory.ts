@@ -23,7 +23,7 @@ export enum ResponseType {
 export class ResponseFactory {
   private responseMap: Record<ResponseType, GoodResponse> = {
     [ResponseType.DATASET_UPLOADED]: {
-      code: HttpStatusCode.OK,
+      code: HttpStatusCode.CREATED,
       status: ResponseType[ResponseType.DATASET_UPLOADED],
       message: Messages.UPLOAD_DATASET,
     },
@@ -53,12 +53,12 @@ export class ResponseFactory {
       message: Messages.ABORTED,
     },
     [ResponseType.RUNNING]: {
-      code: HttpStatusCode.OK,
+      code: HttpStatusCode.ACCEPTED,
       status: ResponseType[ResponseType.RUNNING],
       message: Messages.RUNNING,
     },
     [ResponseType.PENDING]: {
-      code: HttpStatusCode.OK,
+      code: HttpStatusCode.ACCEPTED,
       status: ResponseType[ResponseType.PENDING],
       message: Messages.PENDING,
     },

@@ -11,10 +11,10 @@ enum MESSAGES {
   NO_USER = 'No users were found. Ensure that there are users in the system.',
   UPDATE_COST_FAILED = 'Failed to update the cost. Please check the inputs and try again.',
   NOT_OWNER_JOB = 'You are not the owner of this job',
+  INVALID_ZIP_FILE = 'The file format in the zip is invalid. Please check if the zip not containing folder.',
 
   ROUTE_NOT_FOUND = 'The requested route was not found. Please check the URL and try again.',
   UNAUTHORIZED = 'You are not authorized to access this resource. Please check your credentials.',
-  BAD_REQUEST = 'The request is malformed or invalid. Please check the request parameters and try again.',
   INTERNAL_ERROR = 'An internal server error occurred. Please try again later.',
   MISSING_ENV_VARIABLE = "Missing environment variables",
 
@@ -26,7 +26,6 @@ enum MESSAGES {
   DATASET_ALREADY_EXIST = 'The dataset already exists. Please check the dataset name.',
   DATASET_EMPTY = 'The dataset is empty. Please upload a dataset with data.',
   INFERENCE_FAILED = 'The inference process failed. Please check the input data and try again.',
-  INFERENCE_ABORTED = 'The inference process was aborted. Please try again.',
   ADD_QUEUE_FAILED = 'Failed to add to the queue. Please check the queue settings and try again.',
   JOB_NOT_FOUND = 'The specified job was not found. Please verify the job ID and try again.',
   INSUFFICIENT_BALANCE = 'You have insufficient balance to complete this operation. Please recharge your balance.',
@@ -43,9 +42,7 @@ enum MESSAGES {
   RECHARGED = 'User balance has been successfully recharged.',
 
   ADMIN_NOT_FOUND = 'The specified admin was not found. Please verify the admin details and try again.',
-  INVALID_IMPORT = 'The import value is invalid. It must be greater than 0. Please correct and try again.',
   TOKENS_RECHARGED = 'Tokens have been successfully recharged.',
-  RECHARGE_FAIL = 'Failed to recharge tokens. Please try again later.',
 }
 
 export default MESSAGES;

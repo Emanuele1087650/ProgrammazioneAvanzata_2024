@@ -74,7 +74,7 @@ export function validateInference(req: any, res: any, next: any): void {
 export function validateFile(req: any, res: any, next: any): void {
   for (const file of req.files) {
     if (!(file.fieldname === 'dataset')) {
-      const error = errFactory.createError(ErrorType.BAD_REQUEST);
+      const error = errFactory.createError(ErrorType.INVALID_BODY);
       sendError.send(res, error);
       return;
     }
