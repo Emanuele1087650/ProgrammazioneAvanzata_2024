@@ -1,52 +1,58 @@
 # ProgrammazioneAvanzata_2024
 
-# Gestione di Modelli di Ottimizzazione su Grafo
+# Architettura Docker per Inferenze su Modelli di Deep Learning
 
 [![Made with Node.js](https://img.shields.io/badge/Node.js->=12-blue?logo=node.js&logoColor=white)](https://nodejs.org "Go to Node.js homepage") [![Made with TypeScript](https://img.shields.io/badge/TypeScript-4-blue?logo=typescript&logoColor=white)](https://typescriptlang.org "Go to TypeScript homepage") [![Made with PostgreSQL](https://img.shields.io/badge/PostgreSQL-13-blue?logo=postgresql&logoColor=white)](https://www.postgresql.org/ "Go to PostgresSQL homepage") [![Made with Docker](https://img.shields.io/badge/Made_with-Docker-blue?logo=docker&logoColor=white)](https://www.docker.com/ "Go to Docker homepage")
 
-Questo progetto verte sullo sviluppo di un back-end in Typescript, utilizzando Node.js, Express, Sequelize e PostgreSQL. L'obiettivo principale è quello di realizzare un sistema che consenta di gestire la creazione, la modifica e la valutazione di modelli di ottimizzazione su grafo, consentendo agli utenti autenticati di contribuire attivamente attraverso l'aggiornamento dei pesi degli archi.
+Il progetto prevede lo sviluppo di un backend in TypeScript, gestito tramite Express, che consente di caricare dataset per l'inferenza su modelli di deep learning. Utilizzando Docker, l'architettura garantisce scalabilità ed efficienza nella gestione delle code di richieste di inferenza. Il modello di deep learning impiegato adotta un approccio a due fasi: prima rileva le persone utilizzando YOLOv10 o YOLOv8, poi le classifica per determinare se si tratta di pescatori o altre persone. Gli utenti dispongono di un certo numero di token, necessari sia per l'upload dei file che per le richieste di inferenza, regolando così l'uso delle risorse del sistema.
 
 ## Funzionalità principali
 
-- Creazione di un nuovo modello di grafo con validazione della richiesta e addebito di token in base al numero di nodi e archi.
-- Aggiornamento dei pesi degli archi di un modello esistente da parte dell'utente creatore o di altri utenti, con approvazione richiesta per questi ultimi.
-- Approvazione o rifiuto delle richieste di aggiornamento (provenienti da altri utenti) dei pesi degli archi da parte dell'utente creatore del modello.
-- Visualizzazione dello storico degli aggiornamenti effettuati su un modello, con filtri per data e stato (accettato/rifiutato).
-- Verifica dello stato di un modello, ovvero se ci sono richieste di aggiornamento in sospeso.
-- Visualizzazione delle richieste di aggiornamento in sospeso relative ai modelli creati dall'utente autenticato.
-- Esecuzione di un modello fornendo un nodo di partenza e uno di arrivo, con addebito di token e restituzione del percorso ottimale e del costo associato.
-- Esportazione dello storico degli aggiornamenti dei pesi di un modello in formato JSON con filtri per data.
-- Simulazione di esecuzione di un modello con variazione del peso di un arco specificando valore di inizio, fine e passo di incremento, con restituzione dei risultati e del miglior risultato con la configurazione dei pesi utilizzati.
+- Creazione di un dataset per contenere i file da utilizzare per l'inferenza
+- Eliminazione logica di un dataset
+- Ottenimento della lista dei propri dataset creati
+- Aggiornamento delle informazioni di un dataset
+- Inserimento di contenuti all'interno di un dataset (sono ammessi immagini, video e file zip)
+- Esecuzione dell'inferenza su un dataset, con possibilità di scegliere il modello per la detection e abilitare l'explainability per entrambe le fasi
+- Richiesta dello stato di avanzamento di una richiesta
+- Ottenimento dei risultati di un'inferenza, una volta completata
+- Verifica del numero di token posseduti dall'utente
+- Ricarica dei token di un utente (riservato agli utenti 'admin')
 
 ## Autenticazione e Autorizzazione
 
 - Tutte le chiamate API richiedono l'autenticazione tramite token JWT (JSON Web Token).
-- Ogni utente autenticato ha un numero di token memorizzato nel database, con un valore iniziale impostato durante il seeding del database e l'aggiunta manuale degli utenti.
-- Se i token di un utente sono esauriti, ogni richiesta da parte dello stesso utente restituirà un errore 401 Unauthorized.
-- È prevista una rotta per l'utente con ruolo admin per effettuare la ricarica dei token di un utente fornendo la mail e il nuovo credito.
+- Ogni utente autenticato ha un numero di token memorizzato nel database, con un valore iniziale impostato durante il seeding del database e l'aggiunta manuale degli utenti. Le funzionalità di upload di file e la richiesta di inferenza hanno un costo in termini di token.
+- Se i token di un utente sono esauriti, ogni richiesta da parte dello stesso utente restituirà un errore **401 Unauthorized**.
+- È prevista una rotta per l'utente con ruolo admin per effettuare la ricarica dei token di un utente fornendo lo username e il credito da aggiungere.
 
 ## Architettura e Design Pattern
 
-Il progetto segue un'architettura basata su Express.js per la gestione delle richieste HTTP e Sequelize come ORM per l'interazione con il database PostgreSQL.
+L'architettura del progetto è composta da quattro container Docker interfacciati tra di loro:
+
+1. **Container dell'applicativo**: Contiene l'applicazione sviluppata con Express, che gestisce le richieste degli utenti e le code tramite BullMQ.
+2. **Container Redis**: Supporta BullMQ, fornendo un sistema di gestione delle code performante e affidabile.
+3. **Container PostgreSQL**: Ospita il database per la memorizzazione dei dati dei dataset, degli utenti e delle richieste di inferenza.
+4. **Container della rete neurale**: Contiene il modello di deep learning che esegue l'inferenza, rilevando persone e classificandole. I risultati delle inferenze vengono poi restituiti al container principale.
 
 Inoltre, sono stati inoltre utilizzati i seguenti design pattern:
 
 ### **Singleton**:
 
-Il pattern Singleton, incluso nei Creational Design Patterns, garantisce l’unicità dell’istanza di una classe, rendendola disponibile a livello globale. Questo pattern è stato adottato per stabilire una connessione univoca con il database, assicurando l’uso coerente della stessa istanza. Nello specifico, l’implementazione del Singleton si trova nel file sequelize.ts.
+Il pattern **Singleton**, incluso nei Creational Design Patterns, garantisce l’unicità dell’istanza di una classe, rendendola disponibile a livello globale. Questo pattern è stato adottato per stabilire una connessione univoca con il database, assicurando l’uso coerente della stessa istanza. Nello specifico, l’implementazione del Singleton si trova nel file *sequelize.ts*.
 
 ### **Chain of Responsibility (CoR)**
 
-Il pattern Chain of Responsibility (CoR), appartenente ai Behavioural Design Patterns, consente di gestire una richiesta eseguendo una serie di funzioni connesse in sequenza. In Express, il CoR si concretizza attraverso l’uso dei middleware, che fungono da anelli di una catena. Questo pattern è stato impiegato per selezionare le richieste HTTP, assicurando che solo quelle valide raggiungano il Controller; per ciascuna rotta è stata creata una catena di middleware che include:
+Il pattern **Chain of Responsibility (CoR)**, appartenente ai Behavioural Design Patterns, consente di gestire una richiesta eseguendo una serie di funzioni connesse in sequenza. In Express, il CoR si concretizza attraverso l’uso dei middleware, che fungono da anelli di una catena. Questo pattern è stato impiegato per selezionare le richieste HTTP, assicurando che solo quelle valide raggiungano il Controller; per ciascuna rotta è stata creata una catena di middleware che include:
 
 - middleware per la verifica dell’header e del token JWT, se necessario;
 - middleware specifici per la rotta, per il controllo di tipi, integrità dei dati e vincoli del database;
 - middleware per la validazione dei vari payload e per il trattamento degli errori, che intervengono in caso di eccezioni negli anelli precedenti.
-  La CoR è implementata nella cartella _middleware_.
+  La CoR è implementata nella cartella *middleware*.
 
-### **Builder**
+### **Factory**
 
-Il pattern Builder separa la costruzione di un oggetto complesso dalla sua rappresentazione, consentendo lo stesso processo di costruzione per creare diverse rappresentazioni. Nel caso specifico, il Builder è stato utilizzato per la costruzione dei grafi, elementi che nel nostro programma hanno diversi attributi: questa soluzione fornisce un’interfaccia per la costruzione dell’oggetto passo dopo passo, e può permettere di costruire l’oggetto in diverse varianti, senza che il codice cliente sia influenzato dai cambiamenti nella costruzione dell’oggetto stesso.
+Nel progetto è stato adottato il pattern **Factory** per la gestione sia degli errori che delle risposte. Sono state create due factory separate: una per gli errori e una per le risposte di successo. Questo approccio consente di mantenere una chiara distinzione logica tra gli errori e le risposte andate a buon fine. La factory degli errori gestisce la creazione di messaggi di errore coerenti e standardizzati, mentre la factory delle risposte si occupa di generare risposte positive strutturate in modo uniforme. Questa distinzione migliora la manutenzione del codice e facilita il debugging e l'espansione futura del sistema. L'implementazione del pattern si trova nella cartella *factory*.
 
 ## Progettazione - UML
 
