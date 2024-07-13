@@ -154,6 +154,10 @@ Esempio di **body:**
 - `name (text)`: dataset in cui si vogliono caricare i file
 - `dataset (file)`: dataset da caricare (immagini, video e zip)
 
+**Vincoli di formato**
+- `video`: MP4
+- `zip`: lo zip non può contenere cartelle o file di formato non valido.
+
 ### - Inferenza su un dataset specifico
 
 **Rotta:** `POST /inference`
@@ -238,11 +242,11 @@ Esempio di **body:**
 
 ### Requisiti:
 
-Per prima cosa è necessario avere Docker installato. Nel caso non lo fosse, si può procedere all'installazione dal seguente [link](https://www.docker.com/).
+Per prima cosa è necessario avere `Docker` installato. Nel caso non lo fosse, si può procedere all'installazione dal seguente [link](https://www.docker.com/).
 
 ### Procedura di avvio:
 
-Per prima cosa verificare di avere `git` installato e clonare la repository mediante il seguente comando:
+Verificare di avere `git` installato e clonare la repository mediante il seguente comando:
 ```bash
 $ git clone https://github.com/Emanuele1087650/ProgrammazioneAvanzata_2024
 ```
