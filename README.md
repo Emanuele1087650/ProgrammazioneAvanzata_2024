@@ -78,198 +78,161 @@ Di seguito vengono riportati i diagrammi UML:
 
 | TIPO | ROTTA                 | JWT |
 | ---- | --------------------- | --- |
-| POST | /createGraph          | Sì  |
-| POST | /updateEdge           | Sì  |
-| POST | /acceptDenyRequest    | Sì  |
-| POST | /executeModel         | Sì  |
-| POST | /rechargeTokens       | Sì  |
-| POST | /getGraphRequests     | Sì  |
-| POST | /graphPendingRequests | Sì  |
-| POST | /getMyPendingRequest  | Sì  |
-| POST | /simulateModel        | Sì  |
-| GET  | /getAllGraph          | No  |
+| POST | /createDataset        | Sì  |
+| POST | /deleteDataset        | Sì  |
+| POST | /datasets             | Sì  |
+| POST | /updateDataset        | Sì  |
+| POST | /upload               | Sì  |
+| POST | /inference            | Sì  |
+| POST | /job                  | Sì  |
+| POST | /results              | Sì  |
+| POST | /tokens               | Sì  |
+| POST | /rechage              | Si  |
 
-### - Creazione di un nuovo modello
+### - Creazione di un nuovo dataset
 
-**Rotta:** `POST /createGraph`
+**Rotta:** `POST /createDataset`
 
-**Parametri query:**
+**Body della richiesta:**
 
-- `graph`: grafo in formato JSON con la seguente struttura
+- `name`: nome del dataset che si vuole creare
 
-Esempio di **payload:**
-
-```json
-{
-  "graph": {
-    "A": { "B": 5, "C": 2 },
-    "B": { "A": 5, "C": 1, "D": 3 },
-    "C": { "A": 2, "B": 1, "D": 6 },
-    "D": { "B": 3, "C": 6 }
-  }
-}
-```
-
-### - Aggiornamento dei pesi degli archi di un modello
-
-**Rotta:** `POST /updateEdge`
-
-**Parametri query:**
-
-- `graph_id`: id del grafo da aggiornare
-- `data`: lista degli archi di cui aggiornare il peso
-
-Esempio di **payload:**
+Esempio di **body:**
 
 ```json
 {
-  "graph_id": 2,
-  "data": [
-    { "start": "A", "end": "B", "weight": 7 },
-    { "start": "C", "end": "D", "weight": 4 }
-  ]
+  "name": "dataset"
 }
 ```
 
-### - Approvazione o rifiuto delle richieste di aggiornamento
+### - Eliminazione (logica) di un dataset
 
-**Rotta:** `POST /acceptDenyRequest`
+**Rotta:** `POST /deleteDataset`
 
-**Parametri query:**
+**Body della richiesta:**
 
-- `id_request`: lista di richieste relative al grafo che si vuole accettare/rifiutare
-- `accepted`: lista di valori booleani relativi alla richiesta che si vuole accettare/rifiutare
+- `name`: nome del dataset che si vuole eliminare
 
-Esempio di **payload:**
+Esempio di **body:**
 
 ```json
 {
-  "id_request": [1, 2],
-  "accepted": [true, false]
+  "name": "dataset"
 }
 ```
 
-### - Esecuzione dell'algoritmo di Dijkstra su un grafo
+### - Lista dei dataset creati
 
-**Rotta:** `POST /executeModel`
+**Rotta:** `POST /datasets`
 
-**Parametri query:**
+Per questa rotta è necessaria soltanto l'autenticazione, ma non la specificazione di parametri all'interno del body
 
-- `id_graph`: id del grafo sul quale si vuole applicare l'algoritmo
-- `start`: nodo di partenza del grafo
-- `goal`: nodo di arrivo del grafo
+### - Aggiornamento del nome di un dataset
 
-Esempio di **payload:**
+**Rotta:** `POST /updateDataset`
+
+**Body della richiesta:**
+
+- `name`: dataset di cui si vuole aggiornare il nome
+- `new_name`: nuovo nome
+
+Esempio di **body:**
 
 ```json
 {
-  "id_graph": 1,
-  "start": "A",
-  "goal": "D"
+  "name": "dataset",
+  "new_name": "dataset1"
 }
 ```
+
+### - Caricamento di file all'interno di un dataset
+
+**Rotta:** `POST /upload`
+
+**Body della richiesta (formato form-data):**
+
+- `name (text)`: dataset in cui si vogliono caricare i file
+- `dataset (file)`: dataset da caricare (immagini, video e zip)
+
+### - Inferenza su un dataset specifico
+
+**Rotta:** `POST /inference`
+
+**Body della richiesta:**
+
+- `dataset`: dataset su cui fare inferenza
+- `model`: modello da usare per l'inferenza. Valori accettati: `v8` o `v10`
+- `cam_det`: abilitazione di GradCAM per la detection. Valori accettati: `True` o `False`
+- `cam_cls`: abilitazione di EigenCAM per la classificazione. Valori accettati: `True` o `False`
+
+Esempio di **body:**
+
+```json
+{
+  "dataset": "dataset1",
+  "model": "v10",
+  "cam_det": "False",
+  "cam_cls": "False"
+}
+```
+
+### - Verifica dello stato di processamento di una inferenza
+
+**Rotta:** `POST /job`
+
+**Body della richiesta:**
+
+- `jobId`: id del job di cui si vuole verificare lo stato di processamento
+
+Esempio di **body:**
+
+```json
+{
+  "jobId": 1,
+}
+```
+
+### - Risultato di una inferenza
+
+**Rotta:** `POST /results`
+
+**Body della richiesta:**
+
+- `jobId`: id del job di cui si vuole avere il risultato
+
+Esempio di **body:**
+
+```json
+{
+  "jobId": 1,
+}
+```
+
+### - Token disponibili
+
+**Rotta:** `POST /tokens`
+
+Per questa rotta è necessaria soltanto l'autenticazione, ma non la specificazione di parametri all'interno del body
 
 ### - Ricarica dei token di un utente
 
 La seguente rotta è disponibile solo per gli utenti di tipo **admin**
 
-**Rotta:** `POST /rechargeTokens`
+**Rotta:** `POST /recharge`
 
-**Parametri query:**
+**Body della richiesta:**
 
-- `username`: username dello user di cui si vogliono ricaricare i crediti
-- `amount`: somma da ricaricare
+- `user`: username dell'utente di cui si vogliono ricaricare i token
+- `tokens`: somma da ricaricare
 
-Esempio di **payload:**
-
-```json
-{
-  "username": "user1",
-  "amount": 10
-}
-```
-
-### - Recupero dello storico degli aggiornamenti di un modello
-
-**Rotta:** `POST /getGraphRequests`
-
-**Parametri query:**
-
-- `startDate`: data di inizio (formato: DD-MM-YY HH:MM:SS) - opzionale
-- `endDate`: data di fine (formato: DD-MM-YY) - opzionale
-- `status`: stato degli aggiornamenti ("pending"/"accepted"/"denied") - opzionale
-
-Esempio di **payload:**
+Esempio di **body:**
 
 ```json
 {
-  "id_graph": 1,
-  "status": "accepted",
-  "startDate": "2023-05-18T10:30:00Z"
+  "user": "user1",
+  "tokens": 20
 }
 ```
-
-### - Recupero delle richieste di aggiornamento in sospeso per un grafo
-
-**Rotta:** `POST /graphPendingRequests`
-
-**Parametri query:**
-
-- `id_graph`: id del grafo di cui si vogliono controllare le richieste
-
-Esempio di **payload:**
-
-```json
-{
-  "id_graph": 1
-}
-```
-
-### - Simulazione di variazione del peso di un arco
-
-**Rotta:** `POST /simulateModel`
-
-**Parametri query:**
-
-- `id_graph`: id del grafo di cui si vuole simulare l'applicazione dell'algoritmo di Dijkstra
-- `options`: comprende `start` (il peso di partenza), `stop` (il peso di arrivo) e `step` (passo per aumentare il peso)
-- `route`: percorso da seguire definito dai nodi `start` e `stop`
-- `edge`: arco di cui modificare il peso definito da `node1` e `node2`
-
-Esempio di **payload:**
-
-```json
-{
-  "id_graph": 1,
-  "options": {
-    "start": 1,
-    "stop": 2,
-    "step": 0.1
-  },
-  "route": {
-    "start": "A",
-    "goal": "D"
-  },
-  "edge": {
-    "node1": "A",
-    "node2": "B"
-  }
-}
-```
-
-### - Recupero di tutte le richieste di modifica per un utente proprietario di un modello
-
-**Rotta:** `GET /getMyPendingRequest`
-
-Per questa rotta è necessaria soltanto l'autenticazione, ma non la specificazione di parametri all'interno del body
-
-### - Recupero di tutti i grafi dal database
-
-**Rotta:** `GET /getAllGraph`
-
-Per questa rotta non è necessaria nè l'autenticazione nè la specificazione di parametri.
-
-Questi sono gli esempi delle principali chiamate API disponibili nel sistema.
 
 ## Avvio del servizio
 
