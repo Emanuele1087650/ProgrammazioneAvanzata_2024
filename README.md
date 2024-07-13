@@ -281,6 +281,13 @@ Al primo avvio del servizio tramite Docker, al fine di poter utilizzare l'app, i
 
 Eseguire le richieste sulla porta 3000 tramite cURL o Postman
 
+### Rimozione
+
+Per rimuovere correttamente i container, eseguire il seguente comando in modo da eliminare anche i volumi creati:
+```bash
+$ docker-compose down -v
+```
+
 ## Test del progetto
 
 Si può procedere con l’esecuzione di una serie di test già configurati importando, all'interno di Postman, la collection `PA2024_postman_collection.json` che si trova nella directory principale del repository. I token JWT inclusi sono stati creati utilizzando la chiave ‘mysecretkey’.
