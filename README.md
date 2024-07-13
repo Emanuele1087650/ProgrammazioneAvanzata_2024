@@ -283,7 +283,7 @@ Eseguire le richieste sulla porta 3000 tramite cURL o Postman
 
 ## Test del progetto
 
-Si può procedere con l’esecuzione di una serie di test già configurati importando, all'interno di Postman, la collection `postman_collection.json` che si trova nella directory principale del repository. I token JWT inclusi sono stati creati utilizzando la chiave ‘mysecretkey’.
+Si può procedere con l’esecuzione di una serie di test già configurati importando, all'interno di Postman, la collection `PA2024_postman_collection.json` che si trova nella directory principale del repository. I token JWT inclusi sono stati creati utilizzando la chiave ‘mysecretkey’.
 
 ## Note
 
