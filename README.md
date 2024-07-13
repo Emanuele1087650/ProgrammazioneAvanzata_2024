@@ -234,46 +234,52 @@ Esempio di **body:**
 }
 ```
 
-## Avvio del servizio
+## Utilizzo
 
-Prerequisiti:
+### Requisiti:
 
-- Ambiente Docker installato sulla propria macchina
+Per prima cosa è necessario avere Docker installato. Nel caso non lo fosse, si può procedere all'installazione dal seguente [link](https://www.docker.com/).
 
-Procedura di avvio:
+### Procedura di avvio:
 
-- Posizionarsi nella cartella clonata dal seguente repository
-- Creare, all'interno della root del progetto, un file ".env" con la seguente struttura:
+Per prima cosa verificare di avere `git` installato e clonare la repository mediante il seguente comando:
+```bash
+$ git clone https://github.com/Emanuele1087650/ProgrammazioneAvanzata_2024
+```
+
+Successivamente, spostarsi all'interno della cartella di lavoro:
+```bash
+$ cd ProgrammazioneAvanzata_2024
+```
+
+Creare, all'interno della root del progetto, un file ".env" con la seguente struttura:
 
 ```
-DB_NAME=pa
+DB_NAME=postgres
 DB_USER=postgres
-DB_PASS=postgres
+DB_PASS=root
 DB_HOST=localhost
 DB_PORT=5432
-TZ=Europe/Rome
 API_PORT=3000
-JWT_KEY="mysecretkey"
-ALPHA=0.5
+TZ=Europe/Rome
+JWT_KEY=mysecretkey
+REDIS_HOST=cache
+REDIS_PORT=6379
+CV_HOST=cv
+CV_PORT=8000
 ```
 
 E' necessario sostituire il valore di "JWT_KEY" con la chiave con la quale verranno generati i token JWT.
 
-- Effettuare la costruzione dell'immagine Docker della web app tramite il comando
-
-```
-$ docker build -t "nome_app" .
-```
-
-- Avviare il servizio Docker tramite il comando:
-
-```
+Avviare il servizio Docker tramite il comando:
+```bash
 $ docker-compose up
 ```
+Questa fase può richiedere alcuni minuti per via della dimensione dell'immagine contenente la rete neurale.
 
-- Eseguire le richieste sulla porta 3000 tramite cURL o Postman
+Al primo avvio del servizio tramite Docker, al fine di poter utilizzare l'app, il database verrà popolato con alcuni `user` (per maggiori info si rimanda al file `seed.sql`).
 
-All'avvio del servizio tramite Docker, al fine di poter utilizzare l'app, il database verrà popolato con alcuni `user` (per maggiori info si rimanda al file `seed.sql`).
+Eseguire le richieste sulla porta 3000 tramite cURL o Postman
 
 ## Test del progetto
 
@@ -285,11 +291,15 @@ Si può procedere con l’esecuzione di una serie di test già configurati impor
 
 - [Visual Studio Code](https://code.visualstudio.com/) - IDE di sviluppo
 
-- [Orbstack](https://orbstack.dev/) - Client Docker per la gestione di container
+- [Docker](https://www.docker.com/) - Piattaforma per la gestione di container
 
-- [Postman](https://www.postman.com/) - piattaforma per il testing di API
+- [Postman](https://www.postman.com/) - Piattaforma per le chiamate API
 
-### Autori
+- [DBeaver](https://dbeaver.io/) - Software per interfacciarsi con il database PostgreSQL
 
-- Antonio Baio: [Github](https://github.com/Antonet99)
-- Christian Parente: [Github](https://github.com/Parents99)
+## Contributors
+
+| Contributor Name      | GitHub                                  |
+|:----------------------|:----------------------------------------|
+| ⭐ **Biccheri Emanuele**  | [Click here](https://github.com/Emanuele1087650) |
+| ⭐ **De Ritis Riccardo**   | [Click here](https://github.com/RiccardoDR) |
