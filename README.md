@@ -23,6 +23,13 @@ Il progetto prevede lo sviluppo di un backend in TypeScript, gestito tramite Exp
 
 - Tutte le chiamate API richiedono l'autenticazione tramite token JWT (JSON Web Token).
 - Ogni utente autenticato ha un numero di token memorizzato nel database, con un valore iniziale impostato durante il seeding del database e l'aggiunta manuale degli utenti. Le funzionalità di upload di file e la richiesta di inferenza hanno un costo in termini di token.
+  
+| FILE     | UPLOAD          | INFERENCE |
+| -------- | --------------- | --------- |
+| Immagine |       0.65      |    2.75   |
+| Video    |    0.4/frame    | 1.5/frame |
+| Zip      | 0.7/file valido |     /     |
+
 - Se i token di un utente sono esauriti, ogni richiesta da parte dello stesso utente restituirà un errore **401 Unauthorized**.
 - È prevista una rotta per l'utente con ruolo admin per effettuare la ricarica dei token di un utente fornendo lo username e il credito da aggiungere.
 
@@ -61,18 +68,18 @@ Di seguito vengono riportati i diagrammi UML:
 - Use Case Diagram
 - Sequence Diagram
 
-![usecase](https://github.com/Antonet99/ProgrammazioneAvanzata/blob/main/resources/usecase.png)
+![usecase]()
 
-![POSTcreateGraph](https://github.com/Antonet99/ProgrammazioneAvanzata/blob/main/resources/createGraph.png)
-![GETallGraphs](https://github.com/Antonet99/ProgrammazioneAvanzata/blob/main/resources/GETallGraphs.png)
-![POSTexecuteModel](https://github.com/Antonet99/ProgrammazioneAvanzata/blob/main/resources/POSTexecuteModel.png)
-![POSTgetGraphRequests](https://github.com/Antonet99/ProgrammazioneAvanzata/blob/main/resources/POSTgetGraphRequests.png)
-![POSTgraphPendingRequests](https://github.com/Antonet99/ProgrammazioneAvanzata/blob/main/resources/POSTgraphPendingRequests.png)
-![POSTacceptDenyRequest](https://github.com/Antonet99/ProgrammazioneAvanzata/blob/main/resources/acceptDenyRequest.png)
-![POSTrechargeTokens](https://github.com/Antonet99/ProgrammazioneAvanzata/blob/main/resources/POSTrechargeTokens.png)
-![POSTgetMyPendingRequest](https://github.com/Antonet99/ProgrammazioneAvanzata/blob/main/resources/getMyPendingRequest.png)
-![POSTsimulateModel](https://github.com/Antonet99/ProgrammazioneAvanzata/blob/main/resources/simulateModel.png)
-![POSTupdateEdge](https://github.com/Antonet99/ProgrammazioneAvanzata/blob/main/resources/updateEdge.png)
+![POSTcreateDataset](https://github.com/Emanuele1087650/ProgrammazioneAvanzata_2024/blob/main/resources/create.png)
+![POSTdeleteDataset](https://github.com/Emanuele1087650/ProgrammazioneAvanzata_2024/blob/main/resources/delete.png)
+![POSTdatasets](https://github.com/Emanuele1087650/ProgrammazioneAvanzata_2024/blob/main/resources/datasets.png)
+![POSTupdateDataset](https://github.com/Emanuele1087650/ProgrammazioneAvanzata_2024/blob/main/resources/update.png)
+![POSTupload](https://github.com/Emanuele1087650/ProgrammazioneAvanzata_2024/blob/main/resources/upload.png)
+![POSTinference](https://github.com/Emanuele1087650/ProgrammazioneAvanzata_2024/blob/main/resources/inference.png)
+![POSTjob](https://github.com/Emanuele1087650/ProgrammazioneAvanzata_2024/blob/main/resources/job.png)
+![POSTresults](https://github.com/Emanuele1087650/ProgrammazioneAvanzata_2024/blob/main/resources/results.png)
+![POSTtokens](https://github.com/Emanuele1087650/ProgrammazioneAvanzata_2024/blob/main/resources/tokens.png)
+![POSTrecharge](https://github.com/Emanuele1087650/ProgrammazioneAvanzata_2024/blob/main/resources/recharge.png)
 
 ## Esempi di Chiamate API
 
