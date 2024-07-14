@@ -4,7 +4,7 @@
 
 [![Made with Node.js](https://img.shields.io/badge/Node.js->=12-blue?logo=node.js&logoColor=white)](https://nodejs.org "Go to Node.js homepage") [![Made with TypeScript](https://img.shields.io/badge/TypeScript-4-blue?logo=typescript&logoColor=white)](https://typescriptlang.org "Go to TypeScript homepage") [![Made with PostgreSQL](https://img.shields.io/badge/PostgreSQL-13-blue?logo=postgresql&logoColor=white)](https://www.postgresql.org/ "Go to PostgresSQL homepage") [![Made with Docker](https://img.shields.io/badge/Made_with-Docker-blue?logo=docker&logoColor=white)](https://www.docker.com/ "Go to Docker homepage")
 
-Il progetto prevede lo sviluppo di un backend in TypeScript, gestito tramite Express, che consente di caricare dataset per l'inferenza su modelli di deep learning. Utilizzando Docker, l'architettura garantisce scalabilità ed efficienza nella gestione delle code di richieste di inferenza. Il modello di deep learning impiegato adotta un approccio a due fasi: prima rileva le persone utilizzando YOLOv10 o YOLOv8, poi le classifica per determinare se si tratta di pescatori o altre persone. Gli utenti dispongono di un certo numero di token, necessari sia per l'upload dei file che per le richieste di inferenza, regolando così l'uso delle risorse del sistema.
+Il progetto prevede lo sviluppo di un backend in TypeScript, gestito tramite Express, che consente di caricare dataset per l'inferenza su modelli di deep learning. Utilizzando Docker, l'architettura garantisce scalabilità ed efficienza nella gestione delle code di richieste di inferenza. Il modello di deep learning impiegato adotta un approccio a due fasi: prima rileva le persone utilizzando **YOLOv10** o **YOLOv8**, poi le classifica per determinare se si tratta di pescatori o altre persone. Gli utenti dispongono di un certo numero di token, necessari sia per l'upload dei file che per le richieste di inferenza, regolando così l'uso delle risorse del sistema.
 
 ## Funzionalità principali
 
@@ -17,11 +17,11 @@ Il progetto prevede lo sviluppo di un backend in TypeScript, gestito tramite Exp
 - Richiesta dello stato di avanzamento di una richiesta
 - Ottenimento dei risultati di un'inferenza, una volta completata
 - Verifica del numero di token posseduti dall'utente
-- Ricarica dei token di un utente (riservato agli utenti 'admin')
+- Ricarica dei token di un utente (riservato agli utenti `admin`)
 
 ## Autenticazione e Autorizzazione
 
-- Tutte le chiamate API richiedono l'autenticazione tramite token JWT (JSON Web Token).
+- Tutte le chiamate API richiedono l'autenticazione tramite token **JWT (JSON Web Token)**.
 - Ogni utente autenticato ha un numero di token memorizzato nel database, con un valore iniziale impostato durante il seeding del database e l'aggiunta manuale degli utenti. Le funzionalità di upload di file e la richiesta di inferenza hanno un costo in termini di token.
   
 | FILE     | UPLOAD          | INFERENCE |
@@ -42,7 +42,7 @@ L'architettura del progetto è composta da quattro container Docker interfacciat
 3. **Container PostgreSQL**: Ospita il database per la memorizzazione dei dati dei dataset, degli utenti e delle richieste di inferenza.
 4. **Container della rete neurale**: Contiene il modello di deep learning che esegue l'inferenza, rilevando persone e classificandole. I risultati delle inferenze vengono poi restituiti al container principale.
 
-Inoltre, sono stati inoltre utilizzati i seguenti design pattern:
+Inoltre, sono stati utilizzati i seguenti design pattern:
 
 ### **Singleton**:
 
