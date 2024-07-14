@@ -24,11 +24,11 @@ Il progetto prevede lo sviluppo di un backend in TypeScript, gestito tramite Exp
 - Tutte le chiamate API richiedono l'autenticazione tramite token **JWT (JSON Web Token)**.
 - Ogni utente autenticato ha un numero di token memorizzato nel database, con un valore iniziale impostato durante il seeding del database e l'aggiunta manuale degli utenti. Le funzionalità di upload di file e la richiesta di inferenza hanno un costo in termini di token.
   
-| FILE     | UPLOAD          | INFERENCE |
-| -------- | --------------- | --------- |
-| Immagine |       0.65      |    2.75   |
-| Video    |    0.4/frame    | 1.5/frame |
-| Zip      | 0.7/file valido |     /     |
+    | FILE     | UPLOAD          | INFERENCE |
+    | -------- | --------------- | --------- |
+    | Immagine |       0.65      |    2.75   |
+    | Video    |    0.4/frame    | 1.5/frame |
+    | Zip      | 0.7/file valido |     /     |
 
 - Se i token di un utente sono esauriti, ogni richiesta da parte dello stesso utente restituirà un errore **401 Unauthorized**.
 - È prevista una rotta per l'utente con ruolo admin per effettuare la ricarica dei token di un utente fornendo lo username e il credito da aggiungere.
