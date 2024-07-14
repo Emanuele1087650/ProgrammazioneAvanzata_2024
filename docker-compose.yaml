@@ -22,6 +22,8 @@ services:
     build: ./CV
     ports:
       - 8000:${CV_PORT}
+    env_file:
+      - .env
     restart: always
     volumes:
       - shared_volume:/usr/app/Datasets
