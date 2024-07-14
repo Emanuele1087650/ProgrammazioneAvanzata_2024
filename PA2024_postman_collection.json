@@ -15,7 +15,7 @@
 					"jwt": [
 						{
 							"key": "secret",
-							"value": "prova",
+							"value": "mysecretkey",
 							"type": "string"
 						},
 						{
