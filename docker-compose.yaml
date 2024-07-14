@@ -24,7 +24,6 @@ services:
       - 8000:${CV_PORT}
     restart: always
     volumes:
-      - ./CV:/usr/app/src
       - shared_volume:/usr/app/Datasets
   app:
     build: ./
@@ -46,7 +45,6 @@ services:
       REDIS_HOST: cache
       REDIS_PORT: ${REDIS_PORT}
     volumes:
-      - ./src:/usr/app/src
       - shared_volume:/usr/app/Datasets
 
 volumes:
