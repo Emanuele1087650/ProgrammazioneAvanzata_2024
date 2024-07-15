@@ -68,8 +68,7 @@ Di seguito vengono riportati i diagrammi UML:
 - Use Case Diagram
 - Sequence Diagram
 
-![usecase]()
-
+![usecase](https://github.com/Emanuele1087650/ProgrammazioneAvanzata_2024/blob/main/resources/Use%20case%20diagram-2.png)
 ![POSTcreateDataset](https://github.com/Emanuele1087650/ProgrammazioneAvanzata_2024/blob/main/resources/create.png)
 ![POSTdeleteDataset](https://github.com/Emanuele1087650/ProgrammazioneAvanzata_2024/blob/main/resources/delete.png)
 ![POSTdatasets](https://github.com/Emanuele1087650/ProgrammazioneAvanzata_2024/blob/main/resources/datasets.png)
