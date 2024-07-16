@@ -268,7 +268,7 @@ Creare, all'interno della root del progetto, un file ".env" con la seguente stru
 DB_NAME=postgres
 DB_USER=postgres
 DB_PASS=root
-DB_HOST=localhost
+DB_HOST=db
 DB_PORT=5432
 API_PORT=3000
 TZ=Europe/Rome
