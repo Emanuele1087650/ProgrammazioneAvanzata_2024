@@ -12,11 +12,12 @@ enum MESSAGES {
   UPDATE_COST_FAILED = 'Failed to update the cost. Please check the inputs and try again.',
   NOT_OWNER_JOB = 'You are not the owner of this job',
   INVALID_ZIP_FILE = 'The file format in the zip is invalid. Please check if the zip not containing folder.',
+  NO_REQUEST = 'No requests were found.',
 
   ROUTE_NOT_FOUND = 'The requested route was not found. Please check the URL and try again.',
   UNAUTHORIZED = 'You are not authorized to access this resource. Please check your credentials.',
   INTERNAL_ERROR = 'An internal server error occurred. Please try again later.',
-  MISSING_ENV_VARIABLE = "Missing environment variables",
+  MISSING_ENV_VARIABLE = 'Missing environment variables',
 
   FAILED = 'Inference failed. The tokens have been reloaded. Please try again.',
   ABORTED = 'Inference aborted due to insufficient balance. Please recharge your balance.',
@@ -38,7 +39,7 @@ enum MESSAGES {
   DATASET_UPDATED = 'The dataset has been successfully updated.',
   FILE_UPLOADED = 'The file has been successfully uploaded.',
   NOT_COMPLETED_JOB = 'The job is not completed or has failed. Please check the job status.',
-  DATASET_MEMORY_EXIST = "The dataset already exists in memory.",
+  DATASET_MEMORY_EXIST = 'The dataset already exists in memory.',
   RECHARGED = 'User balance has been successfully recharged.',
 
   ADMIN_NOT_FOUND = 'The specified admin was not found. Please verify the admin details and try again.',

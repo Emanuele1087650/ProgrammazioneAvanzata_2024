@@ -3,9 +3,9 @@ import { SequelizeDB } from '../singleton/sequelize';
 import { ErrorFactory, ErrorType } from '../factory/errFactory';
 import { Dataset, createDataset, getAllDataset, getDatasetByName} from '../models/dataset';
 import { inferenceQueue } from '../queue/worker';
-import { Job } from 'bullmq';
 import { Readable } from 'stream';
 import { getUserByUsername, User } from '../models/users';
+import { createRequest, Request, getRequestById } from '../models/request';
 import ffmpeg from 'fluent-ffmpeg';
 import AdmZip from 'adm-zip';
 import mime from 'mime-types';
@@ -23,7 +23,7 @@ const sequelize = SequelizeDB.getConnection();
 
 /**
  * Retrieves all datasets for the authenticated user.
- * 
+ *
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
  * @returns {Promise<void>}
@@ -43,7 +43,7 @@ export async function getAllDatasets(req: any, res: any) {
 
 /**
  * Creates a new dataset for the authenticated user.
- * 
+ *
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
  * @returns {Promise<void>}
@@ -76,7 +76,7 @@ export async function createDatasets(req: any, res: any) {
 
 /**
  * Deletes a dataset for the authenticated user.
- * 
+ *
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
  * @returns {Promise<void>}
@@ -101,7 +101,7 @@ export async function deleteDataset(req: any, res: any) {
 
 /**
  * Updates a dataset's name for the authenticated user.
- * 
+ *
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
  * @returns {Promise<void>}
@@ -133,7 +133,7 @@ export async function updateDataset(req: any, res: any) {
 
 /**
  * Creates a unique name by appending a timestamp to the original name.
- * 
+ *
  * @param {string} originalName - The original name of the file.
  * @returns {Promise<string>}
  */
@@ -145,7 +145,7 @@ async function createUniqueName(originalName: string) {
 
 /**
  * Counts and verifies the contents of a zip file.
- * 
+ *
  * @param {Buffer} zipBuffer - The buffer of the zip file.
  * @returns {Promise<Object>} An object containing the counts of images and videos.
  */
@@ -176,7 +176,7 @@ async function countAndVerifyZip(zipBuffer: Buffer) {
 
 /**
  * Extracts the contents of a zip file to a directory.
- * 
+ *
  * @param {Buffer} zipBuffer - The buffer of the zip file.
  * @param {string} dir - The directory to extract the files to.
  * @returns {Promise<void>}
@@ -207,7 +207,7 @@ async function extractZip(zipBuffer: Buffer, dir: string) {
 
 /**
  * Saves a file to a directory.
- * 
+ *
  * @param {string} dir - The directory to save the file to.
  * @param {Object} file - The file to save.
  * @returns {Promise<void>}
@@ -230,7 +230,7 @@ async function saveFile(dir: any, file: any) {
 
 /**
  * Counts the number of frames in a video.
- * 
+ *
  * @param {Buffer} buffer - The buffer of the video.
  * @returns {Promise<number>}
  */
@@ -256,7 +256,7 @@ async function countFrame(buffer: Buffer) {
 
 /**
  * Extracts frames from a video buffer.
- * 
+ *
  * @param {Buffer} videoBuffer - The buffer of the video.
  * @returns {Promise<any>} The ffmpeg command.
  */
@@ -270,7 +270,7 @@ async function extractFramesFromVideo(videoBuffer: Buffer) {
 
 /**
  * Uploads files to a dataset.
- * 
+ *
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
  * @returns {Promise<void>}
@@ -325,7 +325,7 @@ export async function upload(req: any, res: any) {
     const inferenceCost =
       (count.frameCount + count.zipVideoCount) * 1.5 +
       (count.imgCount + count.zipImgCount) * 2.75;
-    
+
     const datasetCost = await dataset.getCost();
 
     await user.removeTokens(uploadCost, transaction);
@@ -343,13 +343,14 @@ export async function upload(req: any, res: any) {
 
 /**
  * Adds an inference job to the queue.
- * 
+ *
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
  * @returns {Promise<void>}
  */
 export async function addQueue(req: any, res: any) {
   const transaction = await sequelize.transaction();
+  const transaction2 = await sequelize.transaction();
   try {
     const nameDataset = req.body.dataset;
     const model = req.body.model;
@@ -362,30 +363,51 @@ export async function addQueue(req: any, res: any) {
     if (files.length === 0) {
       throw errFactory.createError(ErrorType.DATASET_EMPTY);
     }
-    let flag: boolean;
     const datasetCost = await dataset.getCost();
+    const userId = await user.getUserId();
+    const request = await createRequest(
+      {
+        cost: datasetCost,
+        idCreator: userId,
+      },
+      transaction2,
+    );
+    await transaction2.commit();
+    const reqId = await request.getIdRequest();
     if ((await user.getBalance()) >= datasetCost) {
       await user.removeTokens(datasetCost, transaction);
-      await transaction.commit();
-      flag = true;
+
+      const job = await inferenceQueue
+        .add(
+          'inference',
+          {
+            reqId,
+            user,
+            dataset,
+            model,
+            camDet,
+            camCls,
+          },
+          {
+            removeOnComplete: true,
+            removeOnFail: true,
+            jobId: `id_${reqId}`,
+          },
+        )
+        .catch(async () => {
+          await Request.update(
+            { status: 'FAILED' },
+            { where: { idRequest: reqId } },
+          );
+          throw errFactory.createError(ErrorType.ADD_QUEUE_FAILED);
+        });
     } else {
-      flag = false;
+      await request.updateStatus('ABORTED', transaction);
     }
-    const job = await inferenceQueue
-      .add('inference', {
-        flag,
-        user,
-        dataset,
-        model,
-        camDet,
-        camCls,
-      })
-      .catch(() => {
-        throw errFactory.createError(ErrorType.ADD_QUEUE_FAILED);
-      });
+    await transaction.commit();
     resFactory.send(res, undefined, {
       message: 'Inference added to queue',
-      jobId: job.id,
+      jobId: reqId,
     });
   } catch (error: any) {
     await transaction.rollback();
@@ -395,13 +417,13 @@ export async function addQueue(req: any, res: any) {
 
 /**
  * Checks if the authenticated user is the owner of the job.
- * 
+ *
  * @param {Job} job - The job to check.
  * @param {User} user - The authenticated user.
  * @returns {Promise<void>}
  */
 async function checkJobOwner(job: any, user: User) {
-  if ((await user.getUserId()) === job.data.user.idUser) {
+  if ((await user.getUserId()) === (await job.getIdCreator())) {
     return;
   } else {
     throw errFactory.createError(ErrorType.NOT_OWNER_JOB);
@@ -410,7 +432,7 @@ async function checkJobOwner(job: any, user: User) {
 
 /**
  * Retrieves the status of a job.
- * 
+ *
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
  * @returns {Promise<void>}
@@ -418,25 +440,22 @@ async function checkJobOwner(job: any, user: User) {
 export async function getJob(req: any, res: any) {
   try {
     const jobId = req.body.jobId;
-    const job: Job | undefined = await inferenceQueue.getJob(jobId);
-    if (job === undefined) {
-      throw errFactory.createError(ErrorType.JOB_NOT_FOUND);
-    }
+    const job: Request = await getRequestById(jobId);
     await checkJobOwner(job, req.user);
-    const flag = job.data.flag;
-    if (!flag) {
-      resFactory.send(res, ResponseType.ABORTED);
-    } else if (await job.isCompleted()) {
+    const status = await job.getStatus();
+    if (status === 'COMPLETED') {
       resFactory.send(res, undefined, {
         status: 'COMPLETED',
-        results: await job.returnvalue,
+        results: await job.getResults(),
       });
-    } else if (await job.isFailed()) {
+    } else if (status === 'FAILED') {
       resFactory.send(res, ResponseType.FAILED);
-    } else if (await job.isActive()) {
+    } else if (status === 'RUNNING') {
       resFactory.send(res, ResponseType.RUNNING);
-    } else if (await job.isWaiting()) {
+    } else if (status === 'PENDING') {
       resFactory.send(res, ResponseType.PENDING);
+    } else if (status === 'ABORTED') {
+      resFactory.send(res, ResponseType.ABORTED);
     } else {
       throw errFactory.createError(ErrorType.INTERNAL_ERROR);
     }
@@ -447,7 +466,7 @@ export async function getJob(req: any, res: any) {
 
 /**
  * Retrieves the results of a completed job.
- * 
+ *
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
  * @returns {Promise<void>}
@@ -455,16 +474,16 @@ export async function getJob(req: any, res: any) {
 export async function getResults(req: any, res: any) {
   const jobId = req.body.jobId;
   try {
-    const job: Job | undefined = await inferenceQueue.getJob(jobId);
+    const job: Request = await getRequestById(jobId);
     if (job === undefined) {
       throw errFactory.createError(ErrorType.JOB_NOT_FOUND);
     }
-    const flag = job.data.flag;
+    const status = await job.getStatus();
     await checkJobOwner(job, req.user);
-    if ((await job.isCompleted()) && flag) {
+    if (status === 'COMPLETED') {
       resFactory.send(res, undefined, {
         status: 'COMPLETED',
-        result: await job.returnvalue,
+        result: await job.getResults(),
       });
     } else {
       throw errFactory.createError(ErrorType.NOT_COMPLETED_JOB);
@@ -476,7 +495,7 @@ export async function getResults(req: any, res: any) {
 
 /**
  * Retrieves the token balance for the authenticated user.
- * 
+ *
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
  * @returns {Promise<void>}
@@ -489,7 +508,7 @@ export async function getTokens(req: any, res: any) {
 
 /**
  * Recharges the token balance for a user.
- * 
+ *
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
  * @returns {Promise<void>}

@@ -8,7 +8,7 @@ const errorHandler = new ErrorFactory();
 
 /**
  * Represents a Dataset.
- * 
+ *
  * @class
  * @extends {Model}
  */
@@ -20,7 +20,7 @@ class Dataset extends Model {
 
   /**
    * Gets the cost of the dataset.
-   * 
+   *
    * @returns {Promise<number>} The cost of the dataset.
    */
   async getCost() {
@@ -28,17 +28,8 @@ class Dataset extends Model {
   }
 
   /**
-   * Gets the name of the dataset.
-   * 
-   * @returns {Promise<string>} The name of the dataset.
-   */
-  async getName() {
-    return this.nameDataset;
-  }
-
-  /**
    * Updates the cost of the dataset.
-   * 
+   *
    * @param {number} newCost - The new cost of the dataset.
    * @param {Transaction} transaction - The transaction object.
    * @returns {Promise<void>}
@@ -54,7 +45,7 @@ class Dataset extends Model {
 
   /**
    * Deletes the dataset.
-   * 
+   *
    * @param {Transaction} transaction - The transaction object.
    * @returns {Promise<void>}
    */
@@ -68,7 +59,7 @@ class Dataset extends Model {
 
   /**
    * Updates the name of the dataset.
-   * 
+   *
    * @param {string} newName - The new name of the dataset.
    * @param {Transaction} transaction - The transaction object.
    * @returns {Promise<void>}
@@ -100,7 +91,7 @@ Dataset.init(
       type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true,
-      field: "id_dataset",
+      field: 'id_dataset',
     },
     cost: {
       type: DataTypes.REAL,
@@ -109,7 +100,7 @@ Dataset.init(
     nameDataset: {
       type: DataTypes.TEXT,
       allowNull: false,
-      field: "name_dataset",
+      field: 'name_dataset',
     },
     idCreator: {
       type: DataTypes.INTEGER,
@@ -117,7 +108,7 @@ Dataset.init(
         model: User,
         key: 'idUser',
       },
-      field: "id_creator",
+      field: 'id_creator',
     },
   },
   {
@@ -130,7 +121,7 @@ Dataset.init(
 
 /**
  * Creates a new dataset.
- * 
+ *
  * @param {Object} data - The dataset data.
  * @param {string} data.nameDataset - The name of the dataset.
  * @param {number} data.idCreator - The ID of the creator.
@@ -156,7 +147,7 @@ async function createDataset(data: any, transaction: Transaction) {
 
 /**
  * Gets a dataset by its name.
- * 
+ *
  * @param {string} name - The name of the dataset.
  * @param {number} idUser - The ID of the user.
  * @returns {Promise<Dataset>} The dataset.
@@ -178,7 +169,7 @@ async function getDatasetByName(name: string, idUser: number) {
 
 /**
  * Gets all datasets for a user.
- * 
+ *
  * @param {number} idUser - The ID of the user.
  * @returns {Promise<Dataset[]>} The list of datasets.
  */
@@ -187,10 +178,7 @@ async function getAllDataset(idUser: number) {
     where: {
       idCreator: idUser,
     },
-    attributes: [
-      'nameDataset',
-      'cost',
-    ],
+    attributes: ['nameDataset', 'cost'],
   }).catch(() => {
     throw errorHandler.createError(ErrorType.INTERNAL_ERROR);
   });

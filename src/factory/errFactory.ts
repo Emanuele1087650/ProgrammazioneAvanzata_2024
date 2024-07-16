@@ -38,6 +38,7 @@ enum ErrorType {
   NOT_OWNER_JOB,
   MISSING_ENV_VARIABLE,
   DATASET_MEMORY_EXIST,
+  NO_REQUEST,
 }
 
 class CustomError extends Error {
@@ -112,7 +113,7 @@ class ErrorFactory {
       message: Messages.USER_NOT_FOUND,
     },
     [ErrorType.NO_DATASETS]: {
-      code: HttpStatusCode.NO_CONTENT,
+      code: HttpStatusCode.BAD_REQUEST,
       name: ErrorType[ErrorType.NO_DATASETS],
       message: Messages.NO_DATASETS,
     },
@@ -167,7 +168,7 @@ class ErrorFactory {
       message: Messages.INSUFFICIENT_BALANCE,
     },
     [ErrorType.NOT_COMPLETED_JOB]: {
-      code: HttpStatusCode.NO_CONTENT,
+      code: HttpStatusCode.BAD_REQUEST,
       name: ErrorType[ErrorType.NOT_COMPLETED_JOB],
       message: Messages.NOT_COMPLETED_JOB,
     },
@@ -200,6 +201,11 @@ class ErrorFactory {
       code: HttpStatusCode.CONFLICT,
       name: ErrorType[ErrorType.DATASET_MEMORY_EXIST],
       message: Messages.DATASET_MEMORY_EXIST,
+    },
+    [ErrorType.NO_REQUEST]: {
+      code: HttpStatusCode.NOT_FOUND,
+      name: ErrorType[ErrorType.NO_REQUEST],
+      message: Messages.NO_REQUEST,
     },
   };
 

@@ -7,7 +7,7 @@ const errorHandler = new ErrorFactory();
 
 /**
  * Represents a User.
- * 
+ *
  * @class
  * @extends {Model}
  */
@@ -20,7 +20,7 @@ class User extends Model {
 
   /**
    * Gets the ID of the user.
-   * 
+   *
    * @returns {Promise<number>} The ID of the user.
    */
   async getUserId() {
@@ -29,7 +29,7 @@ class User extends Model {
 
   /**
    * Gets the username of the user.
-   * 
+   *
    * @returns {Promise<string>} The username of the user.
    */
   async getUsername() {
@@ -38,7 +38,7 @@ class User extends Model {
 
   /**
    * Gets the role of the user.
-   * 
+   *
    * @returns {Promise<string>} The role of the user.
    */
   async getRole() {
@@ -47,7 +47,7 @@ class User extends Model {
 
   /**
    * Gets the balance of tokens of the user.
-   * 
+   *
    * @returns {Promise<number>} The balance of tokens.
    */
   async getBalance() {
@@ -56,7 +56,7 @@ class User extends Model {
 
   /**
    * Adds tokens to the user's balance.
-   * 
+   *
    * @param {number} tokens - The number of tokens to add.
    * @param {Transaction} transaction - The transaction object.
    * @returns {Promise<void>}
@@ -72,7 +72,7 @@ class User extends Model {
 
   /**
    * Removes tokens from the user's balance.
-   * 
+   *
    * @param {number} tokens - The number of tokens to remove.
    * @param {Transaction} transaction - The transaction object.
    * @returns {Promise<void>}
@@ -93,7 +93,7 @@ User.init(
       type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true,
-      field: "id_user",
+      field: 'id_user',
     },
     username: {
       type: DataTypes.TEXT,
@@ -126,7 +126,7 @@ User.init(
 
 /**
  * Gets a user by their ID.
- * 
+ *
  * @param {number} idUser - The ID of the user.
  * @returns {Promise<User>} The user.
  */
@@ -142,7 +142,7 @@ async function getUserById(idUser: number): Promise<User> {
 
 /**
  * Gets a user by their username.
- * 
+ *
  * @param {string} username - The username of the user.
  * @returns {Promise<User>} The user.
  */
@@ -160,7 +160,7 @@ async function getUserByUsername(username: string): Promise<User> {
 
 /**
  * Gets all users.
- * 
+ *
  * @returns {Promise<User[]>} The list of users.
  */
 async function getAllUsers() {

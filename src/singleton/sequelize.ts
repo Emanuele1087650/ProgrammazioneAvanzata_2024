@@ -7,17 +7,16 @@ dotenv.config();
 const errFactory = new ErrorFactory();
 
 /**
- * Classe 'SequelizeSingleton'
- *
- * Classe che si occupa di assicurare la presenza di una singola istanza di un oggetto durante il
- * ciclo di vita del servizio. L'oggetto è utilizzato per costruire la connessione al database
- * attraverso la libreria {@link Sequelize}.
+ * Class that manages the database connection using Sequelize.
  */
-
 export class SequelizeDB {
   private static instance: SequelizeDB;
   private connection: Sequelize;
 
+  /**
+   * Private constructor to prevent multiple instantiations.
+   * Checks that all required environment variables are present.
+   */
   private constructor() {
     if (
       !process.env.DB_NAME ||
@@ -45,6 +44,10 @@ export class SequelizeDB {
     );
   }
 
+  /**
+   * Returns the singleton connection to Sequelize.
+   * @returns {Sequelize} Instance of Sequelize for the database connection.
+   */
   public static getConnection(): Sequelize {
     if (!SequelizeDB.instance) {
       SequelizeDB.instance = new SequelizeDB();
